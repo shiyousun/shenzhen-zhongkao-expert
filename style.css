@@ -1629,3 +1629,44 @@ body {
     border-color: var(--accent);
     color: var(--accent);
 }
+
+/* ========== 多会话并发状态样式 ========== */
+.session-item.streaming {
+    border-left: 3px solid var(--accent);
+}
+
+.streaming-dot {
+    color: var(--accent);
+    animation: streamingPulse 1s infinite;
+    font-size: 10px;
+}
+
+@keyframes streamingPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.session-model-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 8px;
+    background: var(--accent-glow);
+    color: var(--accent);
+    margin-left: 4px;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+/* 会话项流式时高亮效果 */
+.session-item.streaming::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 0 2px 2px 0;
+    animation: streamingPulse 1.5s infinite;
+}
