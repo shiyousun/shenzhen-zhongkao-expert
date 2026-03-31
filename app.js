@@ -1606,15 +1606,57 @@ function drawSimilarTriangles(title, desc, measure) {
 }
 
 // ============================
-// 搜索引擎
+// 搜索引擎（Tavily 真实搜索 + Opus 4.6 智能综合）
 // ============================
+const TAVILY_API_KEY = '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';
+const BRAVE_API_KEY = 'YOUR_BRAVE_API_KEY';
+
+// Tavily 搜索
+async function searchTavily(query, maxResults = 8) {
+    const resp = await fetch('https://api.tavily.com/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            api_key: TAVILY_API_KEY,
+            query: query,
+            max_results: maxResults,
+            include_images: true,
+            include_image_descriptions: true,
+            search_depth: 'advanced',
+        }),
+    });
+    if (!resp.ok) throw new Error(`Tavily 搜索失败: ${resp.status}`);
+    return resp.json();
+}
+
+// Brave 搜索
+async function searchBrave(query, count = 8) {
+    const params = new URLSearchParams({ q: query, count: count });
+    const resp = await fetch(`https://api.search.brave.com/res/v1/web/search?${params}`, {
+        headers: { 'X-Subscription-Token': BRAVE_API_KEY, 'Accept': 'application/json' },
+    });
+    if (!resp.ok) throw new Error(`Brave 搜索失败: ${resp.status}`);
+    return resp.json();
+}
+
+// 搜索结果去重
+function deduplicateResults(results) {
+    const seen = new Set();
+    return results.filter(r => {
+        const key = r.url;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+
 async function doSearch() {
     const input = document.getElementById('searchInput');
     const query = input.value.trim();
     if (!query) return;
 
     const resultsDiv = document.getElementById('searchResults');
-    resultsDiv.innerHTML = '<div class="search-placeholder"><div class="loading-spinner"></div><p>正在搜索...</p></div>';
+    resultsDiv.innerHTML = '<div class="search-placeholder"><div class="loading-spinner"></div><p>🔍 正在全网搜索...</p></div>';
 
     // 获取选中的搜索引擎
     const engines = [];
@@ -1626,13 +1668,119 @@ async function doSearch() {
     }
 
     try {
-        // 使用 Venus 模型做搜索意图分析 + 结果综合
-        // MVP阶段：先用 AI 生成搜索建议
+        // ====== 第1步：并行调用搜索 API ======
+        const searchPromises = [];
+        if (engines.includes('tavily')) {
+            searchPromises.push(
+                searchTavily(query).then(data => ({ engine: 'tavily', data })).catch(e => ({ engine: 'tavily', error: e.message }))
+            );
+        }
+        if (engines.includes('brave')) {
+            searchPromises.push(
+                searchBrave(query).then(data => ({ engine: 'brave', data })).catch(e => ({ engine: 'brave', error: e.message }))
+            );
+        }
+
+        const searchResults = await Promise.all(searchPromises);
+
+        // 合并搜索结果
+        let allResults = [];
+        let allImages = [];
+
+        for (const sr of searchResults) {
+            if (sr.error) {
+                console.warn(`${sr.engine} 搜索失败:`, sr.error);
+                continue;
+            }
+            if (sr.engine === 'tavily') {
+                const tavilyResults = (sr.data.results || []).map(r => ({
+                    title: r.title,
+                    url: r.url,
+                    snippet: r.content,
+                    source: 'Tavily',
+                    score: r.score || 0,
+                }));
+                allResults.push(...tavilyResults);
+                // Tavily 图片
+                if (sr.data.images && sr.data.images.length > 0) {
+                    for (const img of sr.data.images) {
+                        if (typeof img === 'string') {
+                            allImages.push({ url: img, description: '' });
+                        } else if (img.url) {
+                            allImages.push({ url: img.url, description: img.description || '' });
+                        }
+                    }
+                }
+            }
+            if (sr.engine === 'brave') {
+                const braveResults = (sr.data.web?.results || []).map(r => ({
+                    title: r.title,
+                    url: r.url,
+                    snippet: r.description,
+                    source: 'Brave',
+                    score: 0,
+                }));
+                allResults.push(...braveResults);
+                // Brave 视频结果
+                if (sr.data.videos?.results) {
+                    const videoResults = sr.data.videos.results.map(v => ({
+                        title: v.title,
+                        url: v.url,
+                        snippet: v.description || '视频内容',
+                        source: 'Brave-Video',
+                        score: 0.8,
+                        thumbnail: v.thumbnail?.src,
+                        isVideo: true,
+                    }));
+                    allResults.push(...videoResults);
+                }
+            }
+        }
+
+        // 去重
+        allResults = deduplicateResults(allResults);
+
+        // ====== 第2步：如果没有真实搜索结果，仍旧显示提示 ======
+        if (allResults.length === 0 && searchPromises.length === 0) {
+            // 没有选中 Tavily/Brave，用 AI 直接回答
+            resultsDiv.innerHTML = '<div class="search-placeholder"><div class="loading-spinner"></div><p>🤖 AI 分析中...</p></div>';
+        } else if (allResults.length === 0) {
+            resultsDiv.innerHTML = '<div class="search-placeholder"><p>未找到相关搜索结果，请尝试其他关键词</p></div>';
+            return;
+        }
+
+        // 先展示搜索结果卡片
+        resultsDiv.innerHTML = '<div class="search-placeholder"><div class="loading-spinner"></div><p>🤖 Opus 4.6 正在智能综合分析...</p></div>';
+
+        // ====== 第3步：用 Opus 4.6 综合分析 ======
+        const searchContext = allResults.slice(0, 12).map((r, i) =>
+            `[${i + 1}] 标题: ${r.title}\n    链接: ${r.url}\n    摘要: ${r.snippet || '无'}${r.isVideo ? '\n    类型: 视频' : ''}`
+        ).join('\n\n');
+
+        const imageContext = allImages.slice(0, 5).map((img, i) =>
+            `图片${i + 1}: ${img.url}${img.description ? ` (${img.description})` : ''}`
+        ).join('\n');
+
+        const searchSystemPrompt = `你是深圳中考学习资源搜索专家。基于以下真实搜索结果，为用户提供高质量的回答。
+
+## 严格要求
+1. **必须给出真实可点击的链接**：从搜索结果中选取最相关的链接，用 Markdown 链接格式 [标题](URL) 给出
+2. **视频链接**：如果用户要求视频，优先给出 B站(bilibili.com)、YouTube 等视频网站的直接链接，格式：🎬 [视频标题](视频URL)
+3. **图片/图示**：如果有相关图片，用 Markdown 图片格式 ![描述](图片URL) 嵌入
+4. **不要虚构链接**：只使用搜索结果中真实存在的 URL，不要编造
+5. **中文回答**：所有内容用中文
+6. **结构清晰**：使用标题、列表、加粗等 Markdown 格式
+
+## 搜索结果
+${searchContext}
+
+${imageContext ? `## 相关图片\n${imageContext}` : ''}
+
+## 回答格式
+先给出简明扼要的知识要点，然后列出推荐资源（附真实链接）。如果有视频资源，单独列一个"📺 推荐视频"板块。如果有图片，在合适位置嵌入。`;
+
         const messages = [
-            {
-                role: 'system',
-                content: '你是一个深圳中考搜索助手。用户输入搜索关键词，你需要提供：1) 对搜索意图的理解；2) 5-8条高质量的相关知识要点；3) 建议进一步搜索的关键词。使用 Markdown 格式回答。'
-            },
+            { role: 'system', content: searchSystemPrompt },
             { role: 'user', content: `搜索：${query}` }
         ];
 
@@ -1643,29 +1791,66 @@ async function doSearch() {
                 'Authorization': `Bearer ${CONFIG.apiToken}`,
             },
             body: JSON.stringify({
-                model: 'gemini-2.5-flash', // 搜索用快速模型
+                model: 'claude-opus-4-6',
                 messages,
-                temperature: 0.5,
-                max_tokens: 4096,
-                stream: false,
+                temperature: 0.3,
+                max_tokens: 8192,
+                stream: true,
             }),
         });
 
-        if (!response.ok) throw new Error(`搜索失败: ${response.status}`);
+        if (!response.ok) throw new Error(`AI 分析失败: ${response.status}`);
 
-        const data = await response.json();
-        const content = data.choices?.[0]?.message?.content || '未找到相关结果';
-
+        // 流式渲染
+        let aiContent = '';
         resultsDiv.innerHTML = `
             <div class="search-result-item">
                 <div class="result-title">🤖 AI 智能搜索结果</div>
-                <div class="result-snippet">${renderMessageContent(content)}</div>
+                <div class="result-snippet" id="searchAIContent"><div class="typing-indicator"><span></span><span></span><span></span></div></div>
                 <div class="result-meta">
                     <span class="result-source">引擎: ${engines.join(', ')}</span>
-                    <span>模型: Gemini 2.5 Flash</span>
+                    <span>模型: Claude Opus 4.6</span>
                 </div>
             </div>
+            ${renderSearchResultCards(allResults.slice(0, 10))}
         `;
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        const aiContentDiv = document.getElementById('searchAIContent');
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed || !trimmed.startsWith('data:')) continue;
+                const data = trimmed.slice(5).trim();
+                if (data === '[DONE]') continue;
+
+                try {
+                    const json = JSON.parse(data);
+                    const delta = json.choices?.[0]?.delta?.content;
+                    if (delta) {
+                        aiContent += delta;
+                        if (aiContentDiv) {
+                            aiContentDiv.innerHTML = renderMessageContent(aiContent);
+                        }
+                    }
+                } catch (e) {}
+            }
+        }
+
+        // 最终渲染
+        if (aiContentDiv) {
+            aiContentDiv.innerHTML = renderMessageContent(aiContent || '未能生成分析结果');
+        }
 
     } catch (error) {
         resultsDiv.innerHTML = `
@@ -1675,6 +1860,34 @@ async function doSearch() {
             </div>
         `;
     }
+}
+
+// 渲染搜索结果卡片
+function renderSearchResultCards(results) {
+    if (!results || results.length === 0) return '';
+
+    const cards = results.map(r => {
+        const isVideo = r.isVideo || /bilibili\.com|youtube\.com|youtu\.be|v\.qq\.com|ixigua\.com/.test(r.url);
+        const icon = isVideo ? '🎬' : (r.source === 'Brave' ? '🦁' : '🌐');
+        const domain = new URL(r.url).hostname.replace('www.', '');
+        const thumbnail = r.thumbnail ? `<img class="result-card-thumb" src="${r.thumbnail}" onerror="this.style.display='none'" alt="">` : '';
+
+        return `
+            <div class="search-result-card" onclick="window.open('${r.url}', '_blank')">
+                ${thumbnail}
+                <div class="result-card-body">
+                    <div class="result-card-title">${icon} ${escapeHtml(r.title)}</div>
+                    <div class="result-card-snippet">${escapeHtml((r.snippet || '').slice(0, 120))}</div>
+                    <div class="result-card-meta">
+                        <span class="result-card-domain">${domain}</span>
+                        <span class="result-card-source">${r.source}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    return `<div class="search-result-cards">${cards}</div>`;
 }
 
 // 搜索引擎芯片切换
