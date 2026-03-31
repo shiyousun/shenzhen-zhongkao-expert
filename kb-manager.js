@@ -72,13 +72,16 @@ function renderKBTable() {
             return `<span class="file-tag ${tagClass}">${t}</span>`;
         }).join('');
 
-        return `<tr ondblclick="openFilePreview(${realIndex})" class="kb-row-clickable" title="双击查看详情">
+        return `<tr ondblclick="openLocalFile(${realIndex})" class="kb-row-clickable" title="双击打开文件">
             <td><span class="subject-tag subject-${f.subject}">${f.subject}</span></td>
             <td><span class="file-name-cell">${typeIcon} ${f.name}</span>${tagBadges ? '<div class="file-tags-row">' + tagBadges + '</div>' : ''}</td>
             <td>${f.type}</td>
             <td>${f.size}</td>
             <td><span class="status-badge ${statusClass}">${statusText}</span></td>
             <td>
+                <button class="btn btn-ghost" onclick="event.stopPropagation();openLocalFile(${realIndex})" title="打开文件" style="padding:4px 8px;">
+                    📂
+                </button>
                 <button class="btn btn-ghost" onclick="event.stopPropagation();openFilePreview(${realIndex})" title="查看详情" style="padding:4px 8px;">
                     👁️
                 </button>
@@ -90,7 +93,110 @@ function renderKBTable() {
     }).join('');
 }
 
-// ====== 文件预览弹窗 ======
+// ====== 打开本地文件（用系统默认应用 / WPS） ======
+function openLocalFile(index) {
+    const file = KB_DATA[index];
+    if (!file) return;
+
+    // 构建本地文件路径：RAG根目录/学科/文件名
+    const subjectDir = file.subject === '道法' ? '道德与法治' : file.subject;
+    const filePath = `${KB_RAG_ROOT}/${subjectDir}/${file.name}`;
+
+    // 提示用户正在打开
+    showToast(`正在打开「${file.name}」...`, 'info');
+
+    // 使用自定义协议或提示用户
+    // 在纯浏览器环境中，无法直接调用系统命令打开文件
+    // 方案：尝试 file:// 协议 + 提供复制路径功能
+    try {
+        // 尝试通过 file:// 协议打开（部分浏览器支持）
+        const fileUrl = 'file://' + encodeURI(filePath);
+        
+        // 由于浏览器安全限制，file:// 协议可能被阻止
+        // 我们用一个 iframe trick 或者 window.open
+        const opened = window.open(fileUrl, '_blank');
+        
+        if (!opened || opened.closed) {
+            // 浏览器阻止了，显示路径供用户手动打开
+            showFilePathDialog(file, filePath);
+        }
+    } catch (e) {
+        // 回退方案：显示路径对话框
+        showFilePathDialog(file, filePath);
+    }
+}
+
+// 显示文件路径对话框（当无法直接打开时）
+function showFilePathDialog(file, filePath) {
+    const typeIcon = {
+        'PDF': '📄', 'DOCX': '📝', 'PPTX': '📊', 'XLSX': '📈',
+        'MP4': '🎬', 'JPG': '🖼️', 'PNG': '🖼️', 'TXT': '📋'
+    }[file.type] || '📁';
+
+    const modal = document.getElementById('filePreviewModal');
+    modal.querySelector('.preview-title').textContent = `${typeIcon} ${file.name}`;
+    modal.querySelector('.preview-meta').innerHTML = `
+        <span class="subject-tag subject-${file.subject}">${file.subject}</span>
+        <span class="preview-meta-item">📦 ${file.size}</span>
+        <span class="preview-meta-item">📋 ${file.type}</span>
+    `;
+    modal.querySelector('.preview-desc').textContent = file.desc || '暂无描述';
+    modal.querySelector('.preview-content').innerHTML = `
+        <div class="file-open-section">
+            <div class="file-open-icon">📂</div>
+            <h4 class="file-open-title">打开本地文件</h4>
+            <p class="file-open-hint">浏览器安全限制无法直接打开本地文件，请用以下方式打开：</p>
+            <div class="file-path-box" id="filePathBox">
+                <code>${filePath}</code>
+                <button class="btn btn-primary btn-sm" onclick="copyFilePath('${filePath.replace(/'/g, "\\'")}')">📋 复制路径</button>
+            </div>
+            <div class="file-open-methods">
+                <div class="open-method">
+                    <span class="method-icon">🖥️</span>
+                    <div>
+                        <strong>方法一：Finder 直接打开</strong>
+                        <p>复制路径 → 打开 Finder → ⌘+Shift+G → 粘贴路径 → 回车</p>
+                    </div>
+                </div>
+                <div class="open-method">
+                    <span class="method-icon">⌨️</span>
+                    <div>
+                        <strong>方法二：终端命令打开</strong>
+                        <p>打开终端，运行：<code class="cmd-code" onclick="copyFilePath('open &quot;${filePath.replace(/"/g, '\\\\"')}&quot;')">open "${filePath}"</code></p>
+                    </div>
+                </div>
+                <div class="open-method">
+                    <span class="method-icon">📎</span>
+                    <div>
+                        <strong>方法三：WPS Office 打开</strong>
+                        <p>打开 WPS → 文件 → 打开 → 粘贴路径</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    modal.classList.add('show');
+}
+
+// 复制文件路径到剪贴板
+function copyFilePath(path) {
+    navigator.clipboard.writeText(path).then(() => {
+        showToast('路径已复制到剪贴板 ✓', 'success');
+    }).catch(() => {
+        // 降级方案
+        const textArea = document.createElement('textarea');
+        textArea.value = path;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('路径已复制到剪贴板 ✓', 'success');
+    });
+}
+
+// ====== 文件预览弹窗（信息预览，保留作为按钮功能） ======
 function openFilePreview(index) {
     const file = KB_DATA[index];
     if (!file) return;

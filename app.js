@@ -56,10 +56,505 @@ const SYSTEM_PROMPT = `你是"深圳中考全科AI教师"，一位经验丰富�
 // ============================
 // 全局状态
 // ============================
-let chatHistory = [];
 let currentController = null;
 let isStreaming = false;
 let geometryBoard = null;
+
+// ============================
+// 多会话管理
+// ============================
+let sessions = [];          // 所有会话
+let activeSessionId = null; // 当前激活的会话 ID
+let sessionPanelOpen = true;
+
+function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function createSession(title = null, activate = true) {
+    const id = generateId();
+    const session = {
+        id,
+        title: title || `新会话 ${sessions.length + 1}`,
+        messages: [], // {role, content, timestamp}
+        artifacts: [], // {id, title, type, code, icon}
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+    };
+    sessions.unshift(session);
+    saveSessions();
+    renderSessionList();
+    if (activate) {
+        switchSession(id);
+    }
+    return session;
+}
+
+function switchSession(id) {
+    // 先保存当前会话的消息
+    saveCurrentSessionMessages();
+
+    activeSessionId = id;
+    const session = getActiveSession();
+    if (!session) return;
+
+    // 更新标题
+    document.getElementById('chatTitle').textContent = `🤖 ${session.title}`;
+
+    // 恢复消息
+    const container = document.getElementById('chatMessages');
+    container.innerHTML = '';
+
+    if (session.messages.length === 0) {
+        // 显示欢迎消息
+        container.innerHTML = `
+            <div class="message assistant">
+                <div class="message-avatar">🎓</div>
+                <div class="message-content">
+                    <div class="message-text">
+                        <p>你好！我是深圳中考全科 AI 教师。有什么想问的？直接说吧！💪</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        session.messages.forEach(msg => {
+            appendMessage(msg.role, msg.content, false, false);
+        });
+    }
+
+    // 恢复 artifact 缩略图
+    renderArtifactThumbnails();
+
+    // 更新会话列表高亮
+    renderSessionList();
+    saveSessions();
+}
+
+function getActiveSession() {
+    return sessions.find(s => s.id === activeSessionId);
+}
+
+function saveCurrentSessionMessages() {
+    // chatHistory 会在发送时维护，这里不需要额外操作
+}
+
+function deleteSession(id) {
+    if (sessions.length <= 1) {
+        showToast('至少保留一个会话', 'warning');
+        return;
+    }
+    if (!confirm('确定删除此会话？')) return;
+
+    const idx = sessions.findIndex(s => s.id === id);
+    sessions.splice(idx, 1);
+
+    if (activeSessionId === id) {
+        switchSession(sessions[0].id);
+    }
+
+    saveSessions();
+    renderSessionList();
+    showToast('会话已删除', 'success');
+}
+
+function renameSession(id) {
+    const session = sessions.find(s => s.id === id);
+    if (!session) return;
+    const newName = prompt('输入会话名称：', session.title);
+    if (newName && newName.trim()) {
+        session.title = newName.trim();
+        session.updatedAt = Date.now();
+        if (id === activeSessionId) {
+            document.getElementById('chatTitle').textContent = `🤖 ${session.title}`;
+        }
+        saveSessions();
+        renderSessionList();
+    }
+}
+
+function createNewSession() {
+    createSession();
+    showToast('已创建新会话', 'success');
+}
+
+function renderSessionList(filter = '') {
+    const list = document.getElementById('sessionList');
+    const filtered = filter
+        ? sessions.filter(s => s.title.toLowerCase().includes(filter.toLowerCase()))
+        : sessions;
+
+    list.innerHTML = filtered.map(s => {
+        const isActive = s.id === activeSessionId;
+        const msgCount = s.messages.length;
+        const time = formatSessionTime(s.updatedAt);
+        return `
+            <div class="session-item ${isActive ? 'active' : ''}" onclick="switchSession('${s.id}')">
+                <span class="session-item-icon">${msgCount > 0 ? '💬' : '📝'}</span>
+                <div class="session-item-info">
+                    <div class="session-item-title">${escapeHtml(s.title)}</div>
+                    <div class="session-item-meta">${msgCount} 条消息 · ${time}</div>
+                </div>
+                <div class="session-item-actions">
+                    <button class="btn btn-icon" onclick="event.stopPropagation();renameSession('${s.id}')" title="重命名">✏️</button>
+                    <button class="btn btn-icon" onclick="event.stopPropagation();deleteSession('${s.id}')" title="删除" style="color:var(--danger);">🗑️</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // 更新迷你条计数
+    document.getElementById('miniBarCount').textContent = sessions.length;
+}
+
+function filterSessions(query) {
+    renderSessionList(query);
+}
+
+function formatSessionTime(ts) {
+    const d = new Date(ts);
+    const now = new Date();
+    const diff = now - d;
+    if (diff < 60000) return '刚刚';
+    if (diff < 3600000) return Math.floor(diff / 60000) + ' 分钟前';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + ' 小时前';
+    if (diff < 604800000) return Math.floor(diff / 86400000) + ' 天前';
+    return `${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function toggleSessionPanel() {
+    sessionPanelOpen = !sessionPanelOpen;
+    const panel = document.getElementById('sessionPanel');
+    const mini = document.getElementById('sessionMiniBar');
+    const toggleBtn = document.getElementById('sessionToggleBtn');
+
+    if (sessionPanelOpen) {
+        panel.style.display = 'flex';
+        mini.style.display = 'none';
+        toggleBtn.style.display = 'none';
+    } else {
+        panel.style.display = 'none';
+        mini.style.display = 'flex';
+        toggleBtn.style.display = 'inline-flex';
+    }
+}
+
+// ============================
+// 会话持久化（localStorage）
+// ============================
+function saveSessions() {
+    try {
+        const data = {
+            sessions,
+            activeSessionId,
+        };
+        localStorage.setItem('szzkSessions', JSON.stringify(data));
+    } catch (e) {
+        console.warn('保存会话失败:', e);
+    }
+}
+
+function loadSessions() {
+    try {
+        const raw = localStorage.getItem('szzkSessions');
+        if (raw) {
+            const data = JSON.parse(raw);
+            sessions = data.sessions || [];
+            activeSessionId = data.activeSessionId;
+
+            if (sessions.length > 0) {
+                renderSessionList();
+                if (activeSessionId && sessions.find(s => s.id === activeSessionId)) {
+                    switchSession(activeSessionId);
+                } else {
+                    switchSession(sessions[0].id);
+                }
+                return;
+            }
+        }
+    } catch (e) {
+        console.warn('加载会话失败:', e);
+    }
+
+    // 无历史，创建默认会话
+    createSession('全科 AI 教师', true);
+}
+
+// ============================
+// 会话导出
+// ============================
+function exportCurrentSession() {
+    const session = getActiveSession();
+    if (!session || session.messages.length === 0) {
+        showToast('当前会话为空，无法导出', 'warning');
+        return;
+    }
+    downloadSessionFile(session);
+    showToast('会话已导出', 'success');
+}
+
+function exportAllSessions() {
+    if (sessions.length === 0) {
+        showToast('没有会话可导出', 'warning');
+        return;
+    }
+
+    const exportData = {
+        exportTime: new Date().toISOString(),
+        sessionCount: sessions.length,
+        sessions: sessions.map(s => ({
+            title: s.title,
+            createdAt: new Date(s.createdAt).toISOString(),
+            messageCount: s.messages.length,
+            messages: s.messages.map(m => ({
+                role: m.role,
+                content: m.content,
+                time: m.timestamp ? new Date(m.timestamp).toISOString() : null,
+            })),
+        })),
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `中考AI会话_全部_${formatDate(new Date())}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(`已导出 ${sessions.length} 个会话`, 'success');
+}
+
+function downloadSessionFile(session) {
+    // 导出为 Markdown 格式，可读性更好
+    let md = `# ${session.title}\n\n`;
+    md += `> 导出时间: ${new Date().toLocaleString('zh-CN')}\n`;
+    md += `> 消息数: ${session.messages.length}\n\n---\n\n`;
+
+    session.messages.forEach(msg => {
+        const role = msg.role === 'user' ? '👤 用户' : '🎓 AI教师';
+        const time = msg.timestamp ? new Date(msg.timestamp).toLocaleString('zh-CN') : '';
+        md += `### ${role} ${time ? `(${time})` : ''}\n\n`;
+        md += `${msg.content}\n\n---\n\n`;
+    });
+
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${session.title}_${formatDate(new Date())}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function formatDate(d) {
+    return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// ============================
+// Artifact 系统
+// ============================
+let currentArtifactIndex = -1; // 当前打开的 artifact 在 session.artifacts 中的索引
+
+function detectArtifact(content) {
+    // 检测 AI 回复中是否包含可预览的代码块
+    // 匹配 HTML 代码块
+    const htmlMatch = content.match(/```html\s*\n([\s\S]*?)```/i);
+    if (htmlMatch) {
+        return { type: 'html', code: htmlMatch[1].trim(), icon: '🌐', label: 'HTML' };
+    }
+
+    // 匹配 SVG 代码块
+    const svgMatch = content.match(/```svg\s*\n([\s\S]*?)```/i);
+    if (svgMatch) {
+        return { type: 'svg', code: svgMatch[1].trim(), icon: '🎨', label: 'SVG' };
+    }
+
+    // 匹配 Mermaid 图
+    const mermaidMatch = content.match(/```mermaid\s*\n([\s\S]*?)```/i);
+    if (mermaidMatch) {
+        return { type: 'mermaid', code: mermaidMatch[1].trim(), icon: '📊', label: 'Diagram' };
+    }
+
+    // 匹配大段 JS 代码（超过10行可能是可运行的）
+    const jsMatch = content.match(/```(?:javascript|js)\s*\n([\s\S]*?)```/i);
+    if (jsMatch && jsMatch[1].split('\n').length > 10) {
+        return { type: 'javascript', code: jsMatch[1].trim(), icon: '⚡', label: 'JS' };
+    }
+
+    // 匹配 Python 代码
+    const pyMatch = content.match(/```python\s*\n([\s\S]*?)```/i);
+    if (pyMatch && pyMatch[1].split('\n').length > 5) {
+        return { type: 'python', code: pyMatch[1].trim(), icon: '🐍', label: 'Python' };
+    }
+
+    return null;
+}
+
+function addArtifact(title, type, code, icon) {
+    const session = getActiveSession();
+    if (!session) return;
+
+    const artifact = {
+        id: generateId(),
+        title: title || `Artifact ${session.artifacts.length + 1}`,
+        type,
+        code,
+        icon: icon || '📦',
+        createdAt: Date.now(),
+    };
+
+    session.artifacts.push(artifact);
+    saveSessions();
+    renderArtifactThumbnails();
+
+    // 自动打开
+    openArtifact(session.artifacts.length - 1);
+    return artifact;
+}
+
+function openArtifact(index) {
+    const session = getActiveSession();
+    if (!session || !session.artifacts[index]) return;
+
+    const artifact = session.artifacts[index];
+    currentArtifactIndex = index;
+
+    // 显示面板
+    const panel = document.getElementById('artifactPanel');
+    panel.style.display = 'flex';
+
+    // 设置标题
+    document.getElementById('artifactTitle').textContent = `${artifact.icon} ${artifact.title}`;
+
+    // 设置代码
+    const codeEl = document.getElementById('artifactCode');
+    codeEl.textContent = artifact.code;
+
+    // 语法高亮（如果 hljs 可用）
+    if (typeof hljs !== 'undefined') {
+        try { hljs.highlightElement(codeEl); } catch (e) {}
+    }
+
+    // 默认显示预览
+    switchArtifactTab('preview');
+    renderArtifactPreview(artifact);
+    renderArtifactThumbnails();
+}
+
+function renderArtifactPreview(artifact) {
+    const frame = document.getElementById('artifactPreviewFrame');
+
+    if (artifact.type === 'html') {
+        frame.srcdoc = artifact.code;
+    } else if (artifact.type === 'svg') {
+        frame.srcdoc = `<!DOCTYPE html><html><body style="margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f5f5f5;">${artifact.code}</body></html>`;
+    } else if (artifact.type === 'mermaid') {
+        frame.srcdoc = `<!DOCTYPE html><html><head><script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script></head><body style="margin:20px;background:#fff;"><pre class="mermaid">${escapeHtml(artifact.code)}</pre><script>mermaid.initialize({startOnLoad:true,theme:'default'});</script></body></html>`;
+    } else if (artifact.type === 'javascript') {
+        frame.srcdoc = `<!DOCTYPE html><html><head><style>body{font-family:monospace;padding:20px;background:#1a1d28;color:#e8e8ef;}</style></head><body><pre id="output"></pre><script>
+const origLog = console.log;
+console.log = function(...args) {
+    document.getElementById('output').textContent += args.join(' ') + '\\n';
+    origLog.apply(console, args);
+};
+try { ${artifact.code} } catch(e) { document.getElementById('output').textContent += 'Error: ' + e.message; }
+</script></body></html>`;
+    } else {
+        // 纯代码展示
+        frame.srcdoc = `<!DOCTYPE html><html><head><style>body{font-family:monospace;padding:20px;background:#1a1d28;color:#e8e8ef;white-space:pre-wrap;}</style></head><body>${escapeHtml(artifact.code)}</body></html>`;
+    }
+}
+
+function switchArtifactTab(tab) {
+    const codeView = document.getElementById('artifactCodeView');
+    const previewView = document.getElementById('artifactPreviewView');
+    const codeTab = document.getElementById('artifactTabCode');
+    const previewTab = document.getElementById('artifactTabPreview');
+
+    if (tab === 'code') {
+        codeView.style.display = 'block';
+        previewView.style.display = 'none';
+        codeTab.classList.add('active');
+        previewTab.classList.remove('active');
+    } else {
+        codeView.style.display = 'none';
+        previewView.style.display = 'block';
+        codeTab.classList.remove('active');
+        previewTab.classList.add('active');
+    }
+}
+
+function closeArtifactPanel() {
+    document.getElementById('artifactPanel').style.display = 'none';
+    currentArtifactIndex = -1;
+    renderArtifactThumbnails();
+}
+
+function copyArtifactCode() {
+    const session = getActiveSession();
+    if (!session || currentArtifactIndex < 0) return;
+    const code = session.artifacts[currentArtifactIndex].code;
+    navigator.clipboard.writeText(code).then(() => {
+        showToast('代码已复制', 'success');
+    });
+}
+
+function deleteArtifact(index) {
+    const session = getActiveSession();
+    if (!session) return;
+    session.artifacts.splice(index, 1);
+    saveSessions();
+
+    if (currentArtifactIndex === index) {
+        closeArtifactPanel();
+    } else if (currentArtifactIndex > index) {
+        currentArtifactIndex--;
+    }
+    renderArtifactThumbnails();
+}
+
+function renderArtifactThumbnails() {
+    const session = getActiveSession();
+    const container = document.getElementById('artifactThumbnails');
+    if (!session || session.artifacts.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+
+    // 只在面板关闭时显示缩略图
+    const panelOpen = document.getElementById('artifactPanel').style.display !== 'none';
+
+    container.innerHTML = session.artifacts.map((a, i) => {
+        const isOpen = panelOpen && currentArtifactIndex === i;
+        return `
+            <div class="artifact-thumb ${isOpen ? 'active' : ''}" onclick="openArtifact(${i})" title="${escapeHtml(a.title)}">
+                <span class="artifact-thumb-icon">${a.icon}</span>
+                <span class="artifact-thumb-label">${escapeHtml(a.title.slice(0, 8))}</span>
+                <button class="artifact-thumb-close" onclick="event.stopPropagation();deleteArtifact(${i})">✕</button>
+            </div>
+        `;
+    }).join('');
+}
+
+// 从预览弹窗打开本地文件的辅助函数
+function openLocalFileFromPreview() {
+    // 找到当前预览的文件（通过标题匹配）
+    const titleEl = document.querySelector('#filePreviewModal .preview-title');
+    if (!titleEl) return;
+    const titleText = titleEl.textContent;
+    // 去掉 emoji 前缀
+    const fileName = titleText.replace(/^[^\s]+\s/, '');
+    const fileIndex = KB_DATA.findIndex(f => f.name === fileName);
+    if (fileIndex >= 0) {
+        openLocalFile(fileIndex);
+    }
+}
 
 // ============================
 // 页面导航
@@ -153,13 +648,13 @@ function renderMessageContent(text) {
 // ============================
 // 聊天功能
 // ============================
-function appendMessage(role, content, isStreaming = false) {
+function appendMessage(role, content, isStreamingMsg = false, addToSession = true) {
     const container = document.getElementById('chatMessages');
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${role}`;
 
     const avatar = role === 'user' ? '👤' : '🎓';
-    const renderedContent = isStreaming
+    const renderedContent = isStreamingMsg
         ? '<div class="typing-indicator"><span></span><span></span><span></span></div>'
         : renderMessageContent(content);
 
@@ -172,6 +667,25 @@ function appendMessage(role, content, isStreaming = false) {
 
     container.appendChild(msgDiv);
     container.scrollTop = container.scrollHeight;
+
+    // 保存到当前会话
+    if (addToSession && !isStreamingMsg && content) {
+        const session = getActiveSession();
+        if (session) {
+            session.messages.push({ role, content, timestamp: Date.now() });
+            session.updatedAt = Date.now();
+
+            // 自动用第一条用户消息作为会话标题
+            if (role === 'user' && session.messages.length <= 2 && session.title.startsWith('新会话')) {
+                session.title = content.slice(0, 30) + (content.length > 30 ? '...' : '');
+                document.getElementById('chatTitle').textContent = `🤖 ${session.title}`;
+                renderSessionList();
+            }
+
+            saveSessions();
+        }
+    }
+
     return msgDiv;
 }
 
@@ -194,18 +708,22 @@ async function sendChat() {
     input.value = '';
     autoResizeTextarea(input);
 
-    // 添加到历史
-    chatHistory.push({ role: 'user', content: userMsg });
+    const session = getActiveSession();
+    if (!session) return;
 
     // 检查是否需要触发几何画板
     const geoMatch = detectGeometryRequest(userMsg);
     if (geoMatch) {
-        const geoMsg = appendMessage('assistant', '', true);
+        const geoMsg = appendMessage('assistant', '', true, false);
         setTimeout(() => {
+            const replyContent = `已为你加载几何场景：**${getGeometryTitle(geoMatch)}**\n\n请在左侧几何画板中查看和交互。你可以拖拽点位来观察变化。`;
             switchPage('geometry');
             loadGeometry(geoMatch);
-            updateStreamMessage(geoMsg, `已为你加载几何场景：**${getGeometryTitle(geoMatch)}**\n\n请在左侧几何画板中查看和交互。你可以拖拽点位来观察变化。`);
-            chatHistory.push({ role: 'assistant', content: `已加载几何场景：${getGeometryTitle(geoMatch)}` });
+            updateStreamMessage(geoMsg, replyContent);
+            // 保存到会话
+            session.messages.push({ role: 'assistant', content: replyContent, timestamp: Date.now() });
+            session.updatedAt = Date.now();
+            saveSessions();
         }, 500);
         return;
     }
@@ -213,12 +731,18 @@ async function sendChat() {
     // 流式请求 Venus API
     isStreaming = true;
     updateSendButton();
-    const assistantMsg = appendMessage('assistant', '', true);
+    const assistantMsg = appendMessage('assistant', '', true, false);
 
     try {
+        // 构建上下文：使用当前会话的消息历史
+        const contextMsgs = session.messages.slice(-20).map(m => ({
+            role: m.role,
+            content: m.content,
+        }));
+
         const messages = [
             { role: 'system', content: SYSTEM_PROMPT },
-            ...chatHistory.slice(-20) // 保留最近20轮上下文
+            ...contextMsgs,
         ];
 
         currentController = new AbortController();
@@ -278,7 +802,20 @@ async function sendChat() {
 
         // 完成
         if (fullContent) {
-            chatHistory.push({ role: 'assistant', content: fullContent });
+            // 保存到会话
+            session.messages.push({ role: 'assistant', content: fullContent, timestamp: Date.now() });
+            session.updatedAt = Date.now();
+            saveSessions();
+            renderSessionList();
+
+            // 检测是否包含 Artifact（可预览的代码）
+            const artifact = detectArtifact(fullContent);
+            if (artifact) {
+                // 提取标题（用 AI 回复的第一行或代码注释）
+                const firstLine = fullContent.split('\n')[0].replace(/[#*`]/g, '').trim();
+                const artTitle = firstLine.slice(0, 30) || artifact.label;
+                addArtifact(artTitle, artifact.type, artifact.code, artifact.icon);
+            }
         } else {
             updateStreamMessage(assistantMsg, '*（模型未返回内容，请重试）*');
         }
@@ -304,15 +841,30 @@ function stopChat() {
 }
 
 function clearChat() {
-    if (chatHistory.length === 0) return;
-    if (!confirm('确定要清空所有对话记录吗？')) return;
+    const session = getActiveSession();
+    if (!session || session.messages.length === 0) return;
+    if (!confirm('确定要清空当前会话的对话记录吗？')) return;
 
-    chatHistory = [];
+    session.messages = [];
+    session.artifacts = [];
+    session.updatedAt = Date.now();
+    saveSessions();
+
     const container = document.getElementById('chatMessages');
-    // 保留欢迎消息
-    const welcome = container.querySelector('.message.assistant');
-    container.innerHTML = '';
-    if (welcome) container.appendChild(welcome);
+    container.innerHTML = `
+        <div class="message assistant">
+            <div class="message-avatar">🎓</div>
+            <div class="message-content">
+                <div class="message-text">
+                    <p>对话已清空。有什么新问题？💪</p>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // 关闭 artifact 面板
+    closeArtifactPanel();
+    renderSessionList();
     showToast('对话已清空', 'success');
 }
 
@@ -1033,9 +1585,12 @@ function showToast(msg, type = 'info') {
 window.addEventListener('DOMContentLoaded', () => {
     initMarked();
     loadSettings();
+    loadSessions(); // 加载多会话
     switchPage('chat');
-    console.log('🎓 深圳中考专家系统 v1.0 MVP 已启动');
+    console.log('🎓 深圳中考专家系统 v0.9 已启动');
     console.log('📐 JSXGraph 几何引擎就绪');
     console.log('🤖 Venus LLM 对话引擎就绪');
     console.log(`📚 知识库: ${KB_DATA.length} 个文件`);
+    console.log('💬 多会话系统就绪');
+    console.log('📦 Artifact 系统就绪');
 });

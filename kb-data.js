@@ -4,6 +4,8 @@
  * 7 学科 222 文件
  */
 
+const KB_RAG_ROOT = '/Users/friendsun/Documents/乐天/c初三';
+
 const KB_DATA_RAW = [
     // ====== 语文 ======
     { subject: '语文', name: '中考语文基础知识手册.pdf', type: 'PDF', size: '5.3MB', status: 'indexed', desc: '涵盖初中语文全部基础知识体系，包括字音字形、词语运用、病句修改、文学常识、名著导读等，是语文复习的核心参考资料。', tags: ['全面', '基础'] },
