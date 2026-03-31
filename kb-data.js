@@ -1,138 +1,251 @@
 /**
  * 深圳中考专家系统 — 知识库数据
  * RAG 源目录: /Users/friendsun/Documents/乐天/c初三
- * 7 学科 222 文件
+ * 自动扫描生成，共 198 个文件
+ * 生成日期: 2026-03-31
  */
 
 const KB_RAG_ROOT = '/Users/friendsun/Documents/乐天/c初三';
 
 const KB_DATA_RAW = [
     // ====== 语文 ======
-    { subject: '语文', name: '中考语文基础知识手册.pdf', type: 'PDF', size: '5.3MB', status: 'indexed', desc: '涵盖初中语文全部基础知识体系，包括字音字形、词语运用、病句修改、文学常识、名著导读等，是语文复习的核心参考资料。', tags: ['全面', '基础'] },
-    { subject: '语文', name: '初中文言文翻译汇总.pdf', type: 'PDF', size: '4.1MB', status: 'indexed', desc: '收录初中阶段所有必考文言文篇目的原文、注释、翻译和重点句赏析，便于系统复习文言文知识。', tags: ['全面', '文言文'] },
-    { subject: '语文', name: '语文课内古诗词赏析.pptx', type: 'PPTX', size: '6.2MB', status: 'indexed', desc: '课件形式呈现初中阶段所有必背古诗词，含意境分析、手法鉴赏和考点归纳。', tags: ['全面', '古诗词'] },
-    { subject: '语文', name: '作文素材与范文精选.docx', type: 'DOCX', size: '2.7MB', status: 'indexed', desc: '精选中考高分作文范文和万能素材，按主题分类整理，附点评和写作技巧指导。', tags: ['全面', '作文'] },
-    { subject: '语文', name: '深圳中考语文真题2024.pdf', type: 'PDF', size: '2.9MB', status: 'indexed', desc: '2024年深圳中考语文真题完整版，含答案解析和评分标准，是考前必练的核心资料。', tags: ['真题'] },
-    { subject: '语文', name: '现代文阅读真题汇编.pdf', type: 'PDF', size: '3.8MB', status: 'indexed', desc: '近五年深圳中考现代文阅读真题精选，含记叙文、说明文、议论文三大文体。', tags: ['真题', '阅读'] },
-    { subject: '语文', name: '中考语文阅读理解答题技巧.docx', type: 'DOCX', size: '1.8MB', status: 'indexed', desc: '系统归纳阅读理解各类题型的答题模板和得分技巧，含标题含义、句子赏析、人物分析等。', tags: ['技巧', '阅读'] },
-    { subject: '语文', name: '初三语文复习-古诗文默写.pdf', type: 'PDF', size: '2.4MB', status: 'indexed', desc: '中考必背古诗文篇目的默写训练与易错字整理，附情境默写专项练习。', tags: ['专题', '默写'] },
-    { subject: '语文', name: '名著导读-红星照耀中国.pdf', type: 'PDF', size: '3.2MB', status: 'indexed', desc: '《红星照耀中国》名著导读专项，含人物分析、情节梳理和常考题型。', tags: ['专题', '名著'] },
-    { subject: '语文', name: '名句名篇默写训练.docx', type: 'DOCX', size: '1.2MB', status: 'indexed', desc: '高频考试默写题目训练，含理解性默写和直接性默写两种题型。', tags: ['训练', '默写'] },
-
+    { subject: '语文', name: 'final2.mp4', relPath: '语文/final2.mp4', type: 'MP4', size: '126.2MB', status: 'indexed', tags: ["视频"] },
+    { subject: '语文', name: '【答案】诗词鉴赏速通攻略.pdf', relPath: '语文/new/【答案】诗词鉴赏速通攻略.pdf', type: 'PDF', size: '3.0MB', status: 'indexed', tags: ["答案", "技巧"] },
+    { subject: '语文', name: '一轮复习通关笔记.pdf', relPath: '语文/new/一轮复习通关笔记.pdf', type: 'PDF', size: '93.8MB', status: 'indexed', tags: ["笔记"] },
+    { subject: '语文', name: '临考阅读大招通览.pdf', relPath: '语文/new/临考阅读大招通览.pdf', type: 'PDF', size: '1.9MB', status: 'indexed', tags: ["技巧"] },
+    { subject: '语文', name: '作文迁移示例及古诗词鉴赏.zip', relPath: '语文/作文迁移示例及古诗词鉴赏.zip', type: 'ZIP', size: '1.3MB', status: 'indexed', tags: ["作文", "压缩包"] },
+    { subject: '语文', name: '无人声有字幕有画面-醉亭欢歌.mp4', relPath: '语文/无人声有字幕有画面-醉亭欢歌.mp4', type: 'MP4', size: '178.5MB', status: 'indexed', tags: ["视频"] },
+    { subject: '语文', name: '无画面有伴奏有字幕final-醉亭欢歌.mp4', relPath: '语文/无画面有伴奏有字幕final-醉亭欢歌.mp4', type: 'MP4', size: '6.3MB', status: 'indexed', tags: ["视频"] },
+    { subject: '语文', name: '有伴奏有字幕无人声-醉亭欢歌.mp4', relPath: '语文/有伴奏有字幕无人声-醉亭欢歌.mp4', type: 'MP4', size: '5.2MB', status: 'indexed', tags: ["视频"] },
+    { subject: '语文', name: '白底-final.mp4', relPath: '语文/白底-final.mp4', type: 'MP4', size: '7.7MB', status: 'indexed', tags: ["视频"] },
+    { subject: '语文', name: '诗词鉴赏速通攻略.pdf', relPath: '语文/new/诗词鉴赏速通攻略.pdf', type: 'PDF', size: '3.8MB', status: 'indexed', tags: ["技巧"] },
+    { subject: '语文', name: '醉亭欢哥-仅人声.mp4', relPath: '语文/醉亭欢哥-仅人声.mp4', type: 'MP4', size: '3.7MB', status: 'indexed', tags: ["视频"] },
+    { subject: '语文', name: '醉亭欢哥.srt', relPath: '语文/醉亭欢哥.srt', type: 'SRT', size: '2KB', status: 'indexed', tags: ["资料"] },
+    { subject: '语文', name: '醉亭欢歌 (1).mp3', relPath: '语文/醉亭欢歌 (1).mp3', type: 'MP3', size: '3.3MB', status: 'indexed', tags: ["音频"] },
+    { subject: '语文', name: '醉亭欢歌-1230.mp4', relPath: '语文/醉亭欢歌-1230.mp4', type: 'MP4', size: '174.3MB', status: 'indexed', tags: ["视频"] },
+    { subject: '语文', name: '醉亭欢歌-伴奏.MP3', relPath: '语文/醉亭欢歌-伴奏.MP3', type: 'MP3', size: '3.7MB', status: 'indexed', tags: ["音频"] },
+    { subject: '语文', name: '醉亭欢歌-有人声有伴奏有字幕.mp4', relPath: '语文/醉亭欢歌-有人声有伴奏有字幕.mp4', type: 'MP4', size: '5.2MB', status: 'indexed', tags: ["视频"] },
     // ====== 数学 ======
-    { subject: '数学', name: '中考数学知识点全汇总.pdf', type: 'PDF', size: '8.5MB', status: 'indexed', desc: '覆盖初中数学全部知识体系，按章节梳理考点、公式、定理，是数学复习的总纲领。', tags: ['全面', '基础'] },
-    { subject: '数学', name: '中考数学公式大全.pdf', type: 'PDF', size: '1.8MB', status: 'indexed', desc: '初中数学所有必记公式、定理、性质的完整汇总，含几何、代数、统计三大板块。', tags: ['全面', '公式'] },
-    { subject: '数学', name: '数学思维导图全册.pptx', type: 'PPTX', size: '12.4MB', status: 'indexed', desc: '以思维导图形式串联初中数学全册知识点，清晰展现各知识模块间的逻辑关系。', tags: ['全面', '导图'] },
-    { subject: '数学', name: '几何模型大全手册.pdf', type: 'PDF', size: '6.8MB', status: 'indexed', desc: '系统收录初中几何常用模型：中点模型、角平分线模型、旋转模型、相似模型等，含例题详解。', tags: ['全面', '几何'] },
-    { subject: '数学', name: '深圳中考数学真题2024.pdf', type: 'PDF', size: '3.4MB', status: 'indexed', desc: '2024年深圳中考数学真题完整版，含详细解题过程和评分标准。', tags: ['真题'] },
-    { subject: '数学', name: '几何专题-全等与相似.pdf', type: 'PDF', size: '5.7MB', status: 'indexed', desc: '全等三角形和相似三角形的判定与性质专项训练，含辅助线构造方法。', tags: ['专题', '几何'] },
-    { subject: '数学', name: '二次函数压轴题精讲.pdf', type: 'PDF', size: '4.3MB', status: 'indexed', desc: '中考数学压轴题核心——二次函数综合题的分类精讲，含存在性问题和最值问题。', tags: ['专题', '函数'] },
-    { subject: '数学', name: '将军饮马模型专题.pdf', type: 'PDF', size: '1.9MB', status: 'indexed', desc: '将军饮马问题的对称模型详解，含单次对称、双次对称和多维延伸。', tags: ['专题', '模型'] },
-    { subject: '数学', name: '费马点与胡不归问题.pdf', type: 'PDF', size: '2.3MB', status: 'indexed', desc: '费马点最值问题和胡不归折射模型的原理分析与解题方法。', tags: ['专题', '模型'] },
-    { subject: '数学', name: '阿氏圆与角平分线.pdf', type: 'PDF', size: '1.7MB', status: 'indexed', desc: '阿波罗尼斯圆的性质及其在角平分线问题中的应用。', tags: ['专题', '模型'] },
-    { subject: '数学', name: '动点问题与最值专题.pdf', type: 'PDF', size: '3.1MB', status: 'indexed', desc: '动态几何中的最值问题专项，含动点轨迹分析和函数建模方法。', tags: ['专题', '动点'] },
-    { subject: '数学', name: '概率统计专题复习.pdf', type: 'PDF', size: '2.1MB', status: 'indexed', desc: '概率计算和统计分析的系统复习，含频率估计概率、树状图和列表法。', tags: ['专题', '统计'] },
-    { subject: '数学', name: '旋转变换与对称专题.pdf', type: 'PDF', size: '2.6MB', status: 'indexed', desc: '旋转变换的性质和应用，含旋转全等、旋转相似等常见模型。', tags: ['专题', '变换'] },
-    { subject: '数学', name: '辅助线添加技巧.pdf', type: 'PDF', size: '3.5MB', status: 'indexed', desc: '几何证明中常见辅助线的添加思路和方法总结，含截长补短、倍长中线等经典技巧。', tags: ['技巧', '辅助线'] },
-    { subject: '数学', name: '代数综合专项突破.docx', type: 'DOCX', size: '2.8MB', status: 'indexed', desc: '代数板块综合训练，含方程组、不等式组、分式方程的复杂应用题。', tags: ['专题', '代数'] },
-    { subject: '数学', name: '圆的综合题型训练.docx', type: 'DOCX', size: '3.6MB', status: 'indexed', desc: '圆的综合题型训练集，含切线证明、弦长计算、圆周角定理应用等。', tags: ['训练', '圆'] },
-    { subject: '数学', name: '初三数学错题集锦.docx', type: 'DOCX', size: '4.2MB', status: 'indexed', desc: '常见易错题整理分析，帮助识别思维误区和计算陷阱。', tags: ['训练', '错题'] },
-    { subject: '数学', name: '数学讲解视频-二次函数.mp4', type: 'MP4', size: '156MB', status: 'indexed', desc: '二次函数从基础到压轴的完整视频讲解，含图像变换和综合应用。', tags: ['视频', '函数'] },
-    { subject: '数学', name: '数学讲解视频-圆.mp4', type: 'MP4', size: '142MB', status: 'indexed', desc: '圆的基本概念、性质定理到综合应用的系统视频讲解。', tags: ['视频', '圆'] },
-    { subject: '数学', name: '数学讲解视频-几何证明.mp4', type: 'MP4', size: '128MB', status: 'indexed', desc: '几何证明题的解题思路和辅助线方法视频教程。', tags: ['视频', '证明'] },
-
+    { subject: '数学', name: '25.9.28 国庆数学2-九上 带答案.pdf', relPath: '25.9.28 国庆数学2-九上 带答案.pdf', type: 'PDF', size: '1.3MB', status: 'indexed', tags: ["答案"] },
+    { subject: '数学', name: '3    2025年广东省深圳市中考数学模拟卷1.docx', relPath: '数学/3    2025年广东省深圳市中考数学模拟卷1.docx', type: 'DOCX', size: '1.2MB', status: 'indexed', tags: ["真题"] },
+    { subject: '数学', name: '4       2025年广东省深圳市中考数学模拟练习试卷（三）.docx', relPath: '数学/4       2025年广东省深圳市中考数学模拟练习试卷（三）.docx', type: 'DOCX', size: '1.3MB', status: 'indexed', tags: ["真题"] },
+    { subject: '数学', name: '中考专题4--手拉手模型和半角模型（Day16-20汇总）.pdf', relPath: '数学/中考专题4--手拉手模型和半角模型（Day16-20汇总）.pdf', type: 'PDF', size: '1.0MB', status: 'indexed', tags: ["专题"] },
+    { subject: '数学', name: '九下数学第二章 二次函数测试.pdf', relPath: '数学/九下数学第二章 二次函数测试.pdf', type: 'PDF', size: '438KB', status: 'indexed', tags: ["资料"] },
+    { subject: '数学', name: '九下数学第二章 二次函数测试（解析版）.pdf', relPath: '数学/九下数学第二章 二次函数测试（解析版）.pdf', type: 'PDF', size: '632KB', status: 'indexed', tags: ["答案"] },
+    { subject: '数学', name: '九年级适应性考试数学.zip', relPath: '数学/周末作业/九年级适应性考试数学.zip', type: 'ZIP', size: '10.0MB', status: 'indexed', tags: ["压缩包"] },
+    { subject: '数学', name: '作文迁移示例及古诗词鉴赏.zip', relPath: '数学/作文迁移示例及古诗词鉴赏.zip', type: 'ZIP', size: '1.3MB', status: 'indexed', tags: ["作文", "压缩包"] },
+    { subject: '数学', name: '初中几何48模型.pdf', relPath: '数学/new/初中几何48模型.pdf', type: 'PDF', size: '20.0MB', status: 'indexed', tags: ["资料"] },
+    { subject: '数学', name: '北师期末复习宝典合集.pdf', relPath: '数学/北师期末复习宝典合集.pdf', type: 'PDF', size: '5.5MB', status: 'indexed', tags: ["技巧"] },
+    { subject: '数学', name: '广东省深圳市2023-2024学年九年级上学期期末数学模拟试题02.pdf', relPath: '数学/广东省深圳市2023-2024学年九年级上学期期末数学模拟试题02.pdf', type: 'PDF', size: '839KB', status: 'indexed', tags: ["真题"] },
+    { subject: '数学', name: '广东省深圳市深圳外国语学校2020-2021学年九年级上学期期末数学试题.pdf', relPath: '数学/广东省深圳市深圳外国语学校2020-2021学年九年级上学期期末数学试题.pdf', type: 'PDF', size: '680KB', status: 'indexed', tags: ["真题"] },
+    { subject: '数学', name: '新版《新课标同步单元练习》数学九年级下册.pdf', relPath: '新版《新课标同步单元练习》数学九年级下册.pdf', type: 'PDF', size: '186.1MB', status: 'indexed', tags: ["资料"] },
     // ====== 英语 ======
-    { subject: '英语', name: '中考英语高频词汇1600.pdf', type: 'PDF', size: '3.2MB', status: 'indexed', desc: '中考英语必考1600个核心词汇完整版，按主题和频率排序，含例句和用法辨析。', tags: ['全面', '词汇'] },
-    { subject: '英语', name: '英语语法专项复习.pdf', type: 'PDF', size: '4.5MB', status: 'indexed', desc: '初中英语全部语法知识系统梳理，含时态、语态、从句、非谓语动词等核心考点。', tags: ['全面', '语法'] },
-    { subject: '英语', name: '英语时态语态大全.pptx', type: 'PPTX', size: '4.8MB', status: 'indexed', desc: '以课件形式详解英语八大时态和主被动语态转换，含对比表格和练习。', tags: ['全面', '时态'] },
-    { subject: '英语', name: '中考英语作文高分范文.pdf', type: 'PDF', size: '1.9MB', status: 'indexed', desc: '中考英语书面表达各话题高分范文精选，含写作框架和高级句型。', tags: ['全面', '写作'] },
-    { subject: '英语', name: '深圳中考英语真题2024.pdf', type: 'PDF', size: '2.9MB', status: 'indexed', desc: '2024年深圳中考英语真题完整版，含听力材料、答案解析和评分标准。', tags: ['真题'] },
-    { subject: '英语', name: '完形填空技巧与真题.docx', type: 'DOCX', size: '2.8MB', status: 'indexed', desc: '完形填空解题技巧总结和近年真题精练，含逻辑推理和词义辨析训练。', tags: ['专题', '完形'] },
-    { subject: '英语', name: '阅读理解分类训练.pdf', type: 'PDF', size: '5.1MB', status: 'indexed', desc: '阅读理解按文体分类训练（记叙文、说明文、应用文、议论文），含主旨大意和推理判断题。', tags: ['专题', '阅读'] },
-    { subject: '英语', name: '书面表达万能模板.docx', type: 'DOCX', size: '1.6MB', status: 'indexed', desc: '各类书面表达的万能模板（书信、看图、话题、通知等），含过渡词和亮点句型。', tags: ['技巧', '写作'] },
-    { subject: '英语', name: '听力训练材料合集.pdf', type: 'PDF', size: '3.7MB', status: 'indexed', desc: '听力训练配套材料，含听力技巧指导和常见场景对话。', tags: ['专题', '听力'] },
-    { subject: '英语', name: '短文填空专题训练.docx', type: 'DOCX', size: '2.2MB', status: 'indexed', desc: '短文填空题型专项训练，含语法填空和选词填空两种形式。', tags: ['训练', '填空'] },
-    { subject: '英语', name: '英语听力音频01.mp4', type: 'MP4', size: '45MB', status: 'indexed', desc: '中考英语听力模拟训练音频，含对话理解和独白理解。', tags: ['视频', '听力'] },
-
+    { subject: '英语', name: '2024-2025学年广东省广州市荔湾区九年级（上）期末英语试卷.docx', relPath: '英语/2024-2025学年广东省广州市荔湾区九年级（上）期末英语试卷.docx', type: 'DOCX', size: '120KB', status: 'indexed', tags: ["真题"] },
+    { subject: '英语', name: '2025胖桃班中考英语密训押题-必背作文范文.pdf', relPath: '2025胖桃班中考英语密训押题-必背作文范文.pdf', type: 'PDF', size: '6.2MB', status: 'indexed', tags: ["模板", "作文", "速记"] },
+    { subject: '英语', name: '21中考（英语）：作文万能句(1).doc', relPath: '21中考（英语）：作文万能句(1).doc', type: 'DOC', size: '58KB', status: 'indexed', tags: ["作文"] },
+    { subject: '英语', name: '25-26上 九年级深圳S 第6期 (1-4版).pptx', relPath: '英语/9AU6 英语单元资料合集/25-26上 九年级深圳S 第6期 (1-4版).pptx', type: 'PPTX', size: '23.4MB', status: 'indexed', tags: ["资料"] },
+    { subject: '英语', name: '25.9.28 国庆数学2-九上 带答案.pdf', relPath: '3.4班 国庆节英语作业包/写作：袁隆平/25.9.28 国庆数学2-九上 带答案.pdf', type: 'PDF', size: '1.3MB', status: 'indexed', tags: ["答案"] },
+    { subject: '英语', name: '44ffafe631071791c796646af733d2c8.jpg', relPath: '英语/new/44ffafe631071791c796646af733d2c8.jpg', type: 'JPG', size: '346KB', status: 'indexed', tags: ["资料"] },
+    { subject: '英语', name: '56单元短语合版.pptx', relPath: '英语/9AU6 英语单元资料合集/56单元短语合版.pptx', type: 'PPTX', size: '19.3MB', status: 'indexed', tags: ["资料"] },
+    { subject: '英语', name: '5、6单元重点短语记背.pdf', relPath: '英语/5、6单元重点短语记背.pdf', type: 'PDF', size: '132KB', status: 'indexed', tags: ["速记"] },
+    { subject: '英语', name: '9AU6 写作预习记背单.docx', relPath: '英语/9AU6 英语单元资料合集/9AU6 写作预习记背单.docx', type: 'DOCX', size: '13KB', status: 'indexed', tags: ["作文", "速记"] },
+    { subject: '英语', name: '9AU6 综合小测答案（Anna）.pptx', relPath: '英语/9AU6 英语单元资料合集/9AU6 综合小测答案（Anna）.pptx', type: 'PPTX', size: '103KB', status: 'indexed', tags: ["答案"] },
+    { subject: '英语', name: '9AU6 翻译句子 （答案版）.docx', relPath: '英语/9AU6 英语单元资料合集/9AU6 翻译句子 （答案版）.docx', type: 'DOCX', size: '16KB', status: 'indexed', tags: ["答案"] },
+    { subject: '英语', name: '9AU6 英语单元资料合集.zip', relPath: '英语/9AU6 英语单元资料合集.zip', type: 'ZIP', size: '98.2MB', status: 'indexed', tags: ["压缩包"] },
+    { subject: '英语', name: '9BU2 期末复习包.zip', relPath: '英语/9BU2 期末复习包.zip', type: 'ZIP', size: '49.4MB', status: 'indexed', tags: ["压缩包"] },
+    { subject: '英语', name: 'Reading小卷答案 (Anna).pptx', relPath: '英语/9AU6 英语单元资料合集/Reading小卷答案 (Anna).pptx', type: 'PPTX', size: '125KB', status: 'indexed', tags: ["答案"] },
+    { subject: '英语', name: 'Unit 6 The change of my eating habits.mp3', relPath: '英语/9AU6 英语单元资料合集/9AU6 晨读时间听写（课堂没有时间，请自行完成，很重要，既可以用考点词汇磨耳朵，还可以检查听写，还有利于背诵，一剑多雕）/Unit 6 The change of my eating habits.mp3', type: 'MP3', size: '1.7MB', status: 'indexed', tags: ["音频"] },
+    { subject: '英语', name: 'Yuan Longping.mp4', relPath: '3.4班 国庆节英语作业包/写作：袁隆平/Yuan Longping.mp4', type: 'MP4', size: '8.7MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: 'dream of Yuan Longping.mp4', relPath: '3.4班 国庆节英语作业包/写作：袁隆平/dream of Yuan Longping.mp4', type: 'MP4', size: '31.3MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '一模知识点大全.pdf', relPath: '英语/new/一模知识点大全.pdf', type: 'PDF', size: '4.4MB', status: 'indexed', tags: ["全面"] },
+    { subject: '英语', name: '三顾茅庐.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/三顾茅庐.mp4', type: 'MP4', size: '40.6MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '东施效颦.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/东施效颦.mp4', type: 'MP4', size: '7.9MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '中考写作满分范文100篇.pdf', relPath: '英语/中考写作满分范文100篇.pdf', type: 'PDF', size: '196.3MB', status: 'indexed', tags: ["模板", "作文"] },
+    { subject: '英语', name: '中考词汇速刷版【检测卡】1900词 .pdf', relPath: '英语/中考词汇速刷版【检测卡】1900词 .pdf', type: 'PDF', size: '647KB', status: 'indexed', tags: ["资料"] },
+    { subject: '英语', name: '九年级全册教材听力mp3_副本.zip', relPath: '英语/九年级全册教材听力mp3_副本.zip', type: 'ZIP', size: '160.8MB', status: 'indexed', tags: ["压缩包"] },
+    { subject: '英语', name: '井底之蛙.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/井底之蛙.mp4', type: 'MP4', size: '5.5MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '亡羊补牢.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/亡羊补牢.mp4', type: 'MP4', size: '13.2MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '介绍袁隆平（打印版）.pdf', relPath: '3.4班 国庆节英语作业包/写作：袁隆平/介绍袁隆平（打印版）.pdf', type: 'PDF', size: '121KB', status: 'indexed', tags: ["资料"] },
+    { subject: '英语', name: '凿壁借光.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/凿壁借光.mp4', type: 'MP4', size: '6.6MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '刻舟求剑.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/刻舟求剑.mp4', type: 'MP4', size: '5.4MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '卧薪尝胆.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/卧薪尝胆.mp4', type: 'MP4', size: '29.7MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '叶公好龙.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/叶公好龙.mp4', type: 'MP4', size: '28.7MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '听说训练06.mp3', relPath: '英语/9AU6 英语单元资料合集/12.2早读  听说训练/听说训练06.mp3', type: 'MP3', size: '7.3MB', status: 'indexed', tags: ["音频"] },
+    { subject: '英语', name: '国庆节作业.docx', relPath: '3.4班 国庆节英语作业包/国庆节作业.docx', type: 'DOCX', size: '12KB', status: 'indexed', tags: ["资料"] },
+    { subject: '英语', name: '塞翁失马.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/塞翁失马.mp4', type: 'MP4', size: '27.5MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '大竖报答案合刊二（6-10版）.pptx', relPath: '英语/9AU6 英语单元资料合集/大竖报答案合刊二（6-10版）.pptx', type: 'PPTX', size: '29.1MB', status: 'indexed', tags: ["答案"] },
+    { subject: '英语', name: '孟母三迁.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/孟母三迁.mp4', type: 'MP4', size: '4.9MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '守株待兔.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/守株待兔.mp4', type: 'MP4', size: '38.0MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '完璧归赵.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/完璧归赵.mp4', type: 'MP4', size: '4.3MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '宾语从句语法讲解（答案版）.pptx', relPath: '英语/9AU6 英语单元资料合集/宾语从句语法讲解（答案版）.pptx', type: 'PPTX', size: '84KB', status: 'indexed', tags: ["答案"] },
+    { subject: '英语', name: '屈原投江.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/屈原投江.mp4', type: 'MP4', size: '6.2MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '微信视频2025-12-04_095322_071.mp4', relPath: '英语/微信视频2025-12-04_095322_071.mp4', type: 'MP4', size: '42.5MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '微信视频2025-12-04_095343_153.mp4', relPath: '英语/微信视频2025-12-04_095343_153.mp4', type: 'MP4', size: '16.6MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '拔苗助长.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/拔苗助长.mp4', type: 'MP4', size: '5.1MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '指鹿为马.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/指鹿为马.mp4', type: 'MP4', size: '23.4MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '晨读时间挖空听写（原版）.docx', relPath: '英语/9AU6 英语单元资料合集/9AU6 晨读时间听写（课堂没有时间，请自行完成，很重要，既可以用考点词汇磨耳朵，还可以检查听写，还有利于背诵，一剑多雕）/晨读时间挖空听写（原版）.docx', type: 'DOCX', size: '14KB', status: 'indexed', tags: ["资料"] },
+    { subject: '英语', name: '晨读时间挖空听写（原版）.pdf', relPath: '英语/9AU6 英语单元资料合集/9AU6 晨读时间听写（课堂没有时间，请自行完成，很重要，既可以用考点词汇磨耳朵，还可以检查听写，还有利于背诵，一剑多雕）/晨读时间挖空听写（原版）.pdf', type: 'PDF', size: '46KB', status: 'indexed', tags: ["资料"] },
+    { subject: '英语', name: '曹冲称象.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/曹冲称象.mp4', type: 'MP4', size: '8.8MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '望梅止渴.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/望梅止渴.mp4', type: 'MP4', size: '31.0MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '木兰从军.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/木兰从军.mp4', type: 'MP4', size: '10.2MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '滥竽充数.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/滥竽充数.mp4', type: 'MP4', size: '13.8MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '狐假虎威.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/狐假虎威.mp4', type: 'MP4', size: '24.1MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '用英文讲中国故事.rar', relPath: '英语/用英文讲中国故事.rar', type: 'RAR', size: '497.7MB', status: 'indexed', tags: ["资料"] },
+    { subject: '英语', name: '画蛇添足.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/画蛇添足.mp4', type: 'MP4', size: '8.0MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '画龙点睛.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/画龙点睛.mp4', type: 'MP4', size: '16.2MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '盲人摸象.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/盲人摸象.mp4', type: 'MP4', size: '22.0MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '知能9AU6.pptx', relPath: '英语/9AU6 英语单元资料合集/知能9AU6.pptx', type: 'PPTX', size: '3.2MB', status: 'indexed', tags: ["资料"] },
+    { subject: '英语', name: '神笔马良.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/神笔马良.mp4', type: 'MP4', size: '7.0MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '程门立雪.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/程门立雪.mp4', type: 'MP4', size: '25.5MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '第6期 听说训练.pptx', relPath: '英语/9AU6 英语单元资料合集/12.2早读  听说训练/第6期 听说训练.pptx', type: 'PPTX', size: '20.5MB', status: 'indexed', tags: ["资料"] },
+    { subject: '英语', name: '纸上谈兵.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/纸上谈兵.mp4', type: 'MP4', size: '5.3MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '自相矛盾.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/自相矛盾.mp4', type: 'MP4', size: '7.1MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '草船借箭.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/草船借箭.mp4', type: 'MP4', size: '7.7MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '草船借箭_原文.docx', relPath: '英语/用英文讲中国故事/用英文讲中国故事/草船借箭_原文.docx', type: 'DOCX', size: '19KB', status: 'indexed', tags: ["资料"] },
+    { subject: '英语', name: '负荆请罪.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/负荆请罪.mp4', type: 'MP4', size: '11.1MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '闻鸡起舞.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/闻鸡起舞.mp4', type: 'MP4', size: '16.0MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '雪梅A+班初三笔记合集.zip', relPath: '英语/雪梅A+班初三笔记合集.zip', type: 'ZIP', size: '85.3MB', status: 'indexed', tags: ["笔记", "压缩包"] },
+    { subject: '英语', name: '高山流水.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/高山流水.mp4', type: 'MP4', size: '8.3MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '鹬蚌相争.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/鹬蚌相争.mp4', type: 'MP4', size: '14.0MB', status: 'indexed', tags: ["视频"] },
+    { subject: '英语', name: '黔驴技穷.mp4', relPath: '英语/用英文讲中国故事/用英文讲中国故事/黔驴技穷.mp4', type: 'MP4', size: '19.0MB', status: 'indexed', tags: ["视频"] },
     // ====== 物理 ======
-    { subject: '物理', name: '初三物理复习百科全书.pdf', type: 'PDF', size: '7.2MB', status: 'indexed', desc: '覆盖初中物理声、光、热、力、电五大板块的完整知识体系，是物理复习的核心参考。', tags: ['全面', '基础'] },
-    { subject: '物理', name: '物理公式汇总表.pdf', type: 'PDF', size: '1.2MB', status: 'indexed', desc: '初中物理所有公式、单位换算和常用物理量速查表。', tags: ['全面', '公式'] },
-    { subject: '物理', name: '物理实验操作指导.pptx', type: 'PPTX', size: '8.3MB', status: 'indexed', desc: '中考必考实验的操作步骤、注意事项和数据处理方法完整指导。', tags: ['全面', '实验'] },
-    { subject: '物理', name: '深圳中考物理真题2024.pdf', type: 'PDF', size: '3.1MB', status: 'indexed', desc: '2024年深圳中考物理真题完整版，含详细解析和实验题评分标准。', tags: ['真题'] },
-    { subject: '物理', name: '电路分析方法详解.pdf', type: 'PDF', size: '4.1MB', status: 'indexed', desc: '串并联电路识别与分析方法，含等效电路法、电流走向法等实用技巧。', tags: ['专题', '电学'] },
-    { subject: '物理', name: '力学专题训练.pdf', type: 'PDF', size: '4.3MB', status: 'indexed', desc: '力学板块专项训练，含力的分析、牛顿定律应用和功能关系。', tags: ['专题', '力学'] },
-    { subject: '物理', name: '电学实验专项.pdf', type: 'PDF', size: '3.8MB', status: 'indexed', desc: '电学实验的设计、操作和故障分析，含伏安法测电阻和测小灯泡电功率。', tags: ['专题', '实验'] },
-    { subject: '物理', name: '光学折射反射专题.docx', type: 'DOCX', size: '2.5MB', status: 'indexed', desc: '光的折射和反射定律详解，含透镜成像规律和作图方法。', tags: ['专题', '光学'] },
-    { subject: '物理', name: '热学与内能专题.pdf', type: 'PDF', size: '2.7MB', status: 'indexed', desc: '热学基本概念和内能变化规律，含比热容计算和热量传递问题。', tags: ['专题', '热学'] },
-    { subject: '物理', name: '浮力与压强计算.docx', type: 'DOCX', size: '3.4MB', status: 'indexed', desc: '浮力和压强的计算方法及综合应用，含液体压强、大气压强和阿基米德原理。', tags: ['训练', '力学'] },
-    { subject: '物理', name: '物理讲解视频-电学.mp4', type: 'MP4', size: '167MB', status: 'indexed', desc: '电学从基础概念到综合计算的完整视频教程。', tags: ['视频', '电学'] },
-    { subject: '物理', name: '物理讲解视频-力学.mp4', type: 'MP4', size: '134MB', status: 'indexed', desc: '力学体系完整讲解视频，含运动学和动力学核心内容。', tags: ['视频', '力学'] },
-
+    { subject: '物理', name: '0613a50ab61e86d8328beafa02440875.jpg', relPath: '物理/new/0613a50ab61e86d8328beafa02440875.jpg', type: 'JPG', size: '38KB', status: 'indexed', tags: ["资料"] },
+    { subject: '物理', name: '【2025秋】初三物理期末全真模考（通用版）-答案与解析.pdf', relPath: '物理/【2025秋】初三物理期末全真模考（通用版）-答案与解析.pdf', type: 'PDF', size: '771KB', status: 'indexed', tags: ["真题", "答案"] },
+    { subject: '物理', name: '【2025秋】初三物理期末全真模考（通用版）-试卷.pdf', relPath: '物理/【2025秋】初三物理期末全真模考（通用版）-试卷.pdf', type: 'PDF', size: '667KB', status: 'indexed', tags: ["真题"] },
+    { subject: '物理', name: '【中考物理】复习百科全书.pdf', relPath: '物理/new/【中考物理】复习百科全书.pdf', type: 'PDF', size: '5.2MB', status: 'indexed', tags: ["全面"] },
+    { subject: '物理', name: '初中物理全册知识清单(1).pdf', relPath: '物理/new/初中物理全册知识清单(1).pdf', type: 'PDF', size: '4.8MB', status: 'indexed', tags: ["全面"] },
+    { subject: '物理', name: '大招解题宝典-九年级物理（全册）-通用版(3).pdf', relPath: '物理/大招解题宝典-九年级物理（全册）-通用版(3).pdf', type: 'PDF', size: '3.9MB', status: 'indexed', tags: ["技巧"] },
+    { subject: '物理', name: '实验破解秘籍（初中全一册）.pdf', relPath: '物理/new/实验破解秘籍（初中全一册）.pdf', type: 'PDF', size: '13.1MB', status: 'indexed', tags: ["资料"] },
+    { subject: '物理', name: '常考公式速记表.pdf', relPath: '物理/new/常考公式速记表.pdf', type: 'PDF', size: '1.4MB', status: 'indexed', tags: ["速记"] },
     // ====== 化学 ======
-    { subject: '化学', name: '初三化学全册知识点.pdf', type: 'PDF', size: '5.6MB', status: 'indexed', desc: '初三化学上下册全部知识点系统梳理，覆盖物质分类、化学反应、元素化合物三大主线。', tags: ['全面', '基础'] },
-    { subject: '化学', name: '化学方程式大全.pdf', type: 'PDF', size: '2.1MB', status: 'indexed', desc: '初中化学所有必记化学方程式汇总，按反应类型分类整理，含配平方法。', tags: ['全面', '方程式'] },
-    { subject: '化学', name: '元素周期表与化合价.pdf', type: 'PDF', size: '1.5MB', status: 'indexed', desc: '常见元素的化合价规律和元素周期表速记方法。', tags: ['全面', '元素'] },
-    { subject: '化学', name: '深圳中考化学真题2024.pdf', type: 'PDF', size: '2.8MB', status: 'indexed', desc: '2024年深圳中考化学真题完整版，含实验探究题详细解析。', tags: ['真题'] },
-    { subject: '化学', name: '酸碱盐复习专题.pdf', type: 'PDF', size: '4.2MB', status: 'indexed', desc: '酸碱盐的性质、反应规律和除杂鉴别方法系统复习。', tags: ['专题', '酸碱盐'] },
-    { subject: '化学', name: '气体制取与检验.pptx', type: 'PPTX', size: '5.7MB', status: 'indexed', desc: '氧气、二氧化碳、氢气的制取装置选择和气体检验方法详解。', tags: ['专题', '气体'] },
-    { subject: '化学', name: '金属与金属材料.pdf', type: 'PDF', size: '3.6MB', status: 'indexed', desc: '金属的性质、活动性顺序和合金知识专题复习。', tags: ['专题', '金属'] },
-    { subject: '化学', name: '化学实验安全操作.pdf', type: 'PDF', size: '2.3MB', status: 'indexed', desc: '化学实验的安全操作规范和常见仪器使用方法。', tags: ['专题', '实验'] },
-    { subject: '化学', name: '实验探究题专项.docx', type: 'DOCX', size: '3.4MB', status: 'indexed', desc: '实验探究题的解题思路和答题规范训练，含控制变量法和对照实验设计。', tags: ['训练', '实验'] },
-    { subject: '化学', name: '化学计算题解法.docx', type: 'DOCX', size: '1.9MB', status: 'indexed', desc: '化学计算题常用解题方法：差量法、守恒法、关系式法等。', tags: ['训练', '计算'] },
-    { subject: '化学', name: '化学讲解视频-酸碱盐.mp4', type: 'MP4', size: '123MB', status: 'indexed', desc: '酸碱盐核心内容的系统视频讲解，含实验演示。', tags: ['视频', '酸碱盐'] },
-
-    // ====== 道法（道德与法治） ======
-    { subject: '道法', name: '道法中考知识点汇总.pdf', type: 'PDF', size: '4.8MB', status: 'indexed', desc: '道德与法治全册知识点系统梳理，涵盖个人成长、社会生活、国家制度三大模块。', tags: ['全面', '基础'] },
-    { subject: '道法', name: '核心素养与价值观.pptx', type: 'PPTX', size: '6.5MB', status: 'indexed', desc: '核心素养培养目标和社会主义核心价值观的全面解读课件。', tags: ['全面', '价值观'] },
-    { subject: '道法', name: '深圳中考道法真题2024.pdf', type: 'PDF', size: '2.4MB', status: 'indexed', desc: '2024年深圳中考道德与法治真题完整版，含选择题和材料分析题详解。', tags: ['真题'] },
-    { subject: '道法', name: '法治专题复习.pdf', type: 'PDF', size: '3.1MB', status: 'indexed', desc: '宪法、法律和公民权利义务等法治板块的专项复习。', tags: ['专题', '法治'] },
-    { subject: '道法', name: '宪法与基本制度.pdf', type: 'PDF', size: '2.9MB', status: 'indexed', desc: '宪法的地位、基本原则和国家基本制度（经济制度、人民代表大会制度等）。', tags: ['专题', '宪法'] },
-    { subject: '道法', name: '社会主义核心价值观.pdf', type: 'PDF', size: '1.8MB', status: 'indexed', desc: '社会主义核心价值观24字的内涵解读和在中考中的考查方式。', tags: ['专题', '价值观'] },
-    { subject: '道法', name: '时事热点专题分析.docx', type: 'DOCX', size: '2.6MB', status: 'indexed', desc: '近期时事热点与道法知识点的结合分析，含热点素材和答题角度。', tags: ['专题', '时事'] },
-    { subject: '道法', name: '开放性试题答题模板.docx', type: 'DOCX', size: '1.7MB', status: 'indexed', desc: '道法开放性试题的答题框架和模板，含建议类、评析类、实践类题型。', tags: ['技巧', '模板'] },
-
-    // ====== 历史 ======
-    { subject: '历史', name: '历史思维导图全册.pptx', type: 'PPTX', size: '9.2MB', status: 'indexed', desc: '以思维导图形式串联中国史和世界史全部知识点，展现历史发展脉络和因果关系。', tags: ['全面', '导图'] },
-    { subject: '历史', name: '中国近现代史复习纲要.pdf', type: 'PDF', size: '6.3MB', status: 'indexed', desc: '从鸦片战争到新时代的完整知识梳理，中考历史最核心板块。', tags: ['全面', '近代史'] },
-    { subject: '历史', name: '世界史大事年表.pdf', type: 'PDF', size: '3.7MB', status: 'indexed', desc: '世界历史重大事件时间线汇总，含资本主义兴起、两次世界大战和冷战等。', tags: ['全面', '世界史'] },
-    { subject: '历史', name: '深圳中考历史真题2024.pdf', type: 'PDF', size: '2.5MB', status: 'indexed', desc: '2024年深圳中考历史真题完整版，含材料题详细解析。', tags: ['真题'] },
-    { subject: '历史', name: '古代史专题复习.pdf', type: 'PDF', size: '4.4MB', status: 'indexed', desc: '中国古代史和世界古代史的专题复习，含文明起源、制度变革和文化成就。', tags: ['专题', '古代史'] },
-    { subject: '历史', name: '两次世界大战专题.pdf', type: 'PDF', size: '2.8MB', status: 'indexed', desc: '一战和二战的起因、经过、结果和影响的对比分析。', tags: ['专题', '战争'] },
-    { subject: '历史', name: '改革开放与现代化建设.pdf', type: 'PDF', size: '3.3MB', status: 'indexed', desc: '改革开放以来中国现代化建设的重大成就和历史意义。', tags: ['专题', '改革'] },
-    { subject: '历史', name: '历史材料题答题技巧.docx', type: 'DOCX', size: '2.1MB', status: 'indexed', desc: '历史材料分析题的解题步骤和答题规范，含审题方法和组织答案技巧。', tags: ['技巧', '材料题'] },
-
-    // ====== 综合资料 ======
-    { subject: '综合', name: '深圳中考考试说明2025.pdf', type: 'PDF', size: '1.5MB', status: 'indexed', desc: '2025年深圳中考官方考试说明，含各科考试范围、题型设置和分值分布。', tags: ['全面', '考纲'] },
-    { subject: '综合', name: '中考志愿填报指南.pdf', type: 'PDF', size: '2.1MB', status: 'indexed', desc: '深圳中考志愿填报策略指南，含批次设置、录取规则和填报技巧。', tags: ['全面', '志愿'] },
-    { subject: '综合', name: '深圳高中学校介绍.docx', type: 'DOCX', size: '3.8MB', status: 'indexed', desc: '深圳各区主要高中学校的全面介绍，含办学特色、师资力量和录取情况。', tags: ['全面', '学校'] },
-    { subject: '综合', name: '各科复习时间规划表.xlsx', type: 'XLSX', size: '0.3MB', status: 'indexed', desc: '中考各科复习时间分配建议表，含每周计划模板和重点任务清单。', tags: ['规划'] },
-    { subject: '综合', name: '体育中考训练计划.pdf', type: 'PDF', size: '1.2MB', status: 'indexed', desc: '体育中考各项目的训练计划和提分技巧，含跑步、跳绳、游泳等。', tags: ['专题', '体育'] },
-    { subject: '综合', name: '中考心理调适指南.pdf', type: 'PDF', size: '0.9MB', status: 'indexed', desc: '中考前心理调适方法和考试焦虑缓解技巧，帮助保持良好应考状态。', tags: ['专题', '心理'] },
+    { subject: '化学', name: '初中化学期末备考宝典.pdf', relPath: '化学/初中化学期末备考宝典.pdf', type: 'PDF', size: '3.7MB', status: 'indexed', tags: ["技巧"] },
+    { subject: '化学', name: '初中化学期末备考宝典（答案与解析）.pdf', relPath: '化学/初中化学期末备考宝典（答案与解析）.pdf', type: 'PDF', size: '1.9MB', status: 'indexed', tags: ["答案", "技巧"] },
+    { subject: '化学', name: '初中化学知识总结-基础版1.0.pdf', relPath: '化学/new/初中化学知识总结-基础版1.0.pdf', type: 'PDF', size: '1.2MB', status: 'indexed', tags: ["资料"] },
+    { subject: '化学', name: '初中化学知识总结-提升版3.0.pdf', relPath: '化学/new/初中化学知识总结-提升版3.0.pdf', type: 'PDF', size: '1.9MB', status: 'indexed', tags: ["资料"] },
+    { subject: '化学', name: '初中化学知识总结-背诵版2.0.pdf', relPath: '化学/new/初中化学知识总结-背诵版2.0.pdf', type: 'PDF', size: '1.5MB', status: 'indexed', tags: ["速记"] },
+    { subject: '化学', name: '化学大招串讲汇总.pdf', relPath: '化学/new/化学大招串讲汇总.pdf', type: 'PDF', size: '4.4MB', status: 'indexed', tags: ["技巧"] },
+    { subject: '化学', name: '智哥暑假完课奖励—大招手卡.pdf', relPath: '化学/new/智哥暑假完课奖励—大招手卡.pdf', type: 'PDF', size: '12.2MB', status: 'indexed', tags: ["技巧"] },
+    // ====== 道法 ======
+    { subject: '道法', name: '【木木独家教材笔记】九年级下册2025年春版.pdf', relPath: '道法/【木木独家教材笔记】九年级下册2025年春版.pdf', type: 'PDF', size: '70.0MB', status: 'indexed', tags: ["笔记"] },
+    { subject: '道法', name: '九上 四个单元答题模板(1).pdf', relPath: '道法/九上 四个单元答题模板(1).pdf', type: 'PDF', size: '4.8MB', status: 'indexed', tags: ["模板"] },
+    { subject: '道法', name: '九上道德与法治9月练习 20250928 答案版.docx', relPath: '九上道德与法治9月练习 20250928 答案版.docx', type: 'DOCX', size: '22KB', status: 'indexed', tags: ["答案"] },
+    { subject: '道法', name: '九上道德与法治9月练习 20250928 题目版.pdf', relPath: '九上道德与法治9月练习 20250928 题目版.pdf', type: 'PDF', size: '436KB', status: 'indexed', tags: ["资料"] },
+    { subject: '道法', name: '九下答题模板(1).pdf', relPath: '道法/九下答题模板(1).pdf', type: 'PDF', size: '4.6MB', status: 'indexed', tags: ["模板"] },
+    { subject: '道法', name: '关键词速查手册.pdf', relPath: '道法/new/关键词速查手册.pdf', type: 'PDF', size: '821KB', status: 'indexed', tags: ["资料"] },
+    { subject: '道法', name: '广东省深圳市2024-2025学年九年级上学期期末道德与法治试题.pdf', relPath: '道法/广东省深圳市2024-2025学年九年级上学期期末道德与法治试题.pdf', type: 'PDF', size: '2.1MB', status: 'indexed', tags: ["真题"] },
+    { subject: '道法', name: '广东省深圳市福田区2024-2025学年九年级上学期期末道德与法治试题.pdf', relPath: '道法/广东省深圳市福田区2024-2025学年九年级上学期期末道德与法治试题.pdf', type: 'PDF', size: '1.3MB', status: 'indexed', tags: ["真题"] },
+    { subject: '道法', name: '期末必背知识点（九上部分）.pdf', relPath: '道法/期末必背知识点（九上部分）.pdf', type: 'PDF', size: '461KB', status: 'indexed', tags: ["速记"] },
+    { subject: '道法', name: '期末必背知识点（九下部分）.pdf', relPath: '道法/期末必背知识点（九下部分）.pdf', type: 'PDF', size: '630KB', status: 'indexed', tags: ["速记"] },
+    { subject: '道法', name: '答题模板.pdf', relPath: '道法/new/答题模板.pdf', type: 'PDF', size: '1.3MB', status: 'indexed', tags: ["模板"] },
+    { subject: '道法', name: '翻书宝典内容版—七年级上册.pdf', relPath: '道法/翻书宝典内容版—七年级上册.pdf', type: 'PDF', size: '488KB', status: 'indexed', tags: ["技巧"] },
+    { subject: '道法', name: '翻书宝典内容版—七年级下册.pdf', relPath: '道法/翻书宝典内容版—七年级下册.pdf', type: 'PDF', size: '527KB', status: 'indexed', tags: ["技巧"] },
+    { subject: '道法', name: '翻书宝典内容版—九年级上册.pdf', relPath: '道法/翻书宝典内容版—九年级上册.pdf', type: 'PDF', size: '686KB', status: 'indexed', tags: ["技巧"] },
+    { subject: '道法', name: '翻书宝典内容版—九年级下册.pdf', relPath: '道法/翻书宝典内容版—九年级下册.pdf', type: 'PDF', size: '496KB', status: 'indexed', tags: ["技巧"] },
+    { subject: '道法', name: '翻书宝典内容版—八年级上册.pdf', relPath: '道法/翻书宝典内容版—八年级上册.pdf', type: 'PDF', size: '895KB', status: 'indexed', tags: ["技巧"] },
+    { subject: '道法', name: '翻书宝典内容版—八年级下册.pdf', relPath: '道法/翻书宝典内容版—八年级下册.pdf', type: 'PDF', size: '661KB', status: 'indexed', tags: ["技巧"] },
+    { subject: '道法', name: '翻书宝典合集(3).pdf', relPath: '道法/new/翻书宝典合集(3).pdf', type: 'PDF', size: '3.0MB', status: 'indexed', tags: ["技巧"] },
+    { subject: '道法', name: '高频知识速记(1).pdf', relPath: '道法/高频知识速记(1).pdf', type: 'PDF', size: '1.1MB', status: 'indexed', tags: ["速记"] },
+    // ====== 课本 ======
+    { subject: '课本', name: '人教版9下化学电子书.pdf', relPath: '课本/人教版9下化学电子书.pdf', type: 'PDF', size: '19.9MB', status: 'indexed', tags: ["教材"] },
+    { subject: '课本', name: '人教版9下历史电子书.pdf', relPath: '课本/人教版9下历史电子书.pdf', type: 'PDF', size: '6.1MB', status: 'indexed', tags: ["教材"] },
+    { subject: '课本', name: '人教版9下语文电子书.pdf', relPath: '课本/人教版9下语文电子书.pdf', type: 'PDF', size: '5.5MB', status: 'indexed', tags: ["教材"] },
+    { subject: '课本', name: '人教版9下道法电子书.pdf', relPath: '课本/人教版9下道法电子书.pdf', type: 'PDF', size: '5.3MB', status: 'indexed', tags: ["教材"] },
+    { subject: '课本', name: '人教版9物理全一册电子书.pdf', relPath: '课本/人教版9物理全一册电子书.pdf', type: 'PDF', size: '18.2MB', status: 'indexed', tags: ["教材"] },
+    { subject: '课本', name: '北师大9下数学电子书.pdf', relPath: '课本/北师大9下数学电子书.pdf', type: 'PDF', size: '16.7MB', status: 'indexed', tags: ["教材"] },
+    { subject: '课本', name: '沪教版9下英语电子书.pdf', relPath: '课本/沪教版9下英语电子书.pdf', type: 'PDF', size: '3.8MB', status: 'indexed', tags: ["教材"] },
+    // ====== 综合 ======
+    { subject: '综合', name: '2025胖桃班中考英语密训押题-必背作文范文.pdf', relPath: '汇总学习资料/2025胖桃班中考英语密训押题-必背作文范文.pdf', type: 'PDF', size: '6.2MB', status: 'indexed', tags: ["模板", "作文", "速记"] },
+    { subject: '综合', name: '21中考（英语）：作文万能句(1).doc', relPath: '汇总学习资料/21中考（英语）：作文万能句(1).doc', type: 'DOC', size: '58KB', status: 'indexed', tags: ["作文"] },
+    { subject: '综合', name: '5种基本句型.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/5种基本句型.jpg', type: 'JPG', size: '63KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: 'it用法.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/it用法.jpg', type: 'JPG', size: '59KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: 'there be.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/there be.jpg', type: 'JPG', size: '61KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '【中考】电学大招解题宝典（全册）-通用版.pdf', relPath: '汇总学习资料/【中考】电学大招解题宝典（全册）-通用版.pdf', type: 'PDF', size: '2.8MB', status: 'indexed', tags: ["技巧"] },
+    { subject: '综合', name: '【小王子专享·一轮复习】A+秋L13-情态动词(1).pdf', relPath: '汇总学习资料/【小王子专享·一轮复习】A+秋L13-情态动词(1).pdf', type: 'PDF', size: '1.9MB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '一般将来时.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/一般将来时.jpg', type: 'JPG', size: '62KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '一般现在时.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/一般现在时.jpg', type: 'JPG', size: '62KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '一般过去时.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/一般过去时.jpg', type: 'JPG', size: '63KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '不定代词.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/不定代词.jpg', type: 'JPG', size: '62KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '中考物理必备变化公式速记(1).pdf', relPath: '汇总学习资料/中考物理必备变化公式速记(1).pdf', type: 'PDF', size: '774KB', status: 'indexed', tags: ["速记"] },
+    { subject: '综合', name: '九年级期中写作宝典.pdf', relPath: '汇总学习资料/九年级期中写作宝典.pdf', type: 'PDF', size: '11.1MB', status: 'indexed', tags: ["技巧", "作文"] },
+    { subject: '综合', name: '人称代词.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/人称代词.jpg', type: 'JPG', size: '60KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '介词.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/介词.jpg', type: 'JPG', size: '58KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '倒装句.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/倒装句.jpg', type: 'JPG', size: '62KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '冠词.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/冠词.jpg', type: 'JPG', size: '60KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '初中数学196大招）.pdf', relPath: '汇总学习资料/初中数学196大招）.pdf', type: 'PDF', size: '460.0MB', status: 'indexed', tags: ["技巧"] },
+    { subject: '综合', name: '初中数学公式大 全.pdf', relPath: '汇总学习资料/初中数学公式大 全.pdf', type: 'PDF', size: '2.1MB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '初中英语全套语法思维导图.pdf', relPath: '汇总学习资料/初中英语全套语法思维导图.pdf', type: 'PDF', size: '14.5MB', status: 'indexed', tags: ["笔记"] },
+    { subject: '综合', name: '副容词.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/副容词.jpg', type: 'JPG', size: '59KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '动词辨析.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/动词辨析.jpg', type: 'JPG', size: '62KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '原因&目的状语从句 (2).jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/原因&目的状语从句 (2).jpg', type: 'JPG', size: '65KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '原因&目的状语从句.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/原因&目的状语从句.jpg', type: 'JPG', size: '66KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '反义疑问句.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/反义疑问句.jpg', type: 'JPG', size: '62KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '反身代词.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/反身代词.jpg', type: 'JPG', size: '61KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '名词.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/名词.jpg', type: 'JPG', size: '60KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '国庆实验要求.pptx', relPath: '国庆实验要求.pptx', type: 'PPTX', size: '41.4MB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '复句.pdf', relPath: 's深中/复句.pdf', type: 'PDF', size: '615KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '定语从句.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/定语从句.jpg', type: 'JPG', size: '62KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '宾语从句.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/宾语从句.jpg', type: 'JPG', size: '62KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '并列连词.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/并列连词.jpg', type: 'JPG', size: '61KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '广东卷【初三英语】25秋期中本地化模考【试卷&答题卡】.pdf', relPath: '汇总学习资料/广东卷【初三英语】25秋期中本地化模考【试卷&答题卡】.pdf', type: 'PDF', size: '364KB', status: 'indexed', tags: ["真题"] },
+    { subject: '综合', name: '形副三级.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/形副三级.jpg', type: 'JPG', size: '62KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '形容词.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/形容词.jpg', type: 'JPG', size: '59KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '情态动词.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/情态动词.jpg', type: 'JPG', size: '62KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '感叹句.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/感叹句.jpg', type: 'JPG', size: '60KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '感官&使役动词.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/感官&使役动词.jpg', type: 'JPG', size: '66KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '指示代词.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/指示代词.jpg', type: 'JPG', size: '62KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '数词.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/数词.jpg', type: 'JPG', size: '59KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '时态综合.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/时态综合.jpg', type: 'JPG', size: '61KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '时间状语从句.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/时间状语从句.jpg', type: 'JPG', size: '63KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '条件状语从句.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/条件状语从句.jpg', type: 'JPG', size: '63KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '物主代词.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/物主代词.jpg', type: 'JPG', size: '61KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '现在完成时.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/现在完成时.jpg', type: 'JPG', size: '64KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '现在进行时.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/现在进行时.jpg', type: 'JPG', size: '62KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '疑问句.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/疑问句.jpg', type: 'JPG', size: '62KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '相似模型专题：、母子型、手拉手型、K字型（解析版）.docx', relPath: '相似模型专题：、母子型、手拉手型、K字型（解析版）.docx', type: 'DOCX', size: '2.8MB', status: 'indexed', tags: ["答案", "专题"] },
+    { subject: '综合', name: '祈使句.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/祈使句.jpg', type: 'JPG', size: '60KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '第一、二单元综合测试.pdf', relPath: '第一、二单元综合测试.pdf', type: 'PDF', size: '926KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '第一、二单元综合测试答案.pdf', relPath: '第一、二单元综合测试答案.pdf', type: 'PDF', size: '84KB', status: 'indexed', tags: ["答案"] },
+    { subject: '综合', name: '系动词.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/系动词.jpg', type: 'JPG', size: '60KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '结果状语从句.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/结果状语从句.jpg', type: 'JPG', size: '63KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '被动语态 (2).jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/被动语态 (2).jpg', type: 'JPG', size: '62KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '被动语态.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/被动语态.jpg', type: 'JPG', size: '62KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '让步状语从句.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/让步状语从句.jpg', type: 'JPG', size: '63KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '过去完成时.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/过去完成时.jpg', type: 'JPG', size: '62KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '过去进行时.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/过去进行时.jpg', type: 'JPG', size: '62KB', status: 'indexed', tags: ["资料"] },
+    { subject: '综合', name: '雪梅班-初中语法胶囊课(1).zip', relPath: '汇总学习资料/雪梅班-初中语法胶囊课(1).zip', type: 'ZIP', size: '2.1MB', status: 'indexed', tags: ["压缩包"] },
+    { subject: '综合', name: '非谓语动词.jpg', relPath: '汇总学习资料/雪梅班-初中语法胶囊课/非谓语动词.jpg', type: 'JPG', size: '63KB', status: 'indexed', tags: ["资料"] },
 ];
 
 /**
  * 知识库智能排序
- * 排序优先级：全面介绍类 > 真题类 > 专题类 > 技巧类 > 训练类 > 视频类 > 规划类
+ * 排序优先级：教材类 > 全面介绍类 > 真题类 > 技巧类 > 笔记类 > 专题类 > 速记类 > 模板类 > 资料类 > 视频音频类 > 压缩包类
  * 同级按学科分组内顺序保持
  */
 function getFileSortWeight(file) {
     const tags = file.tags || [];
-    if (tags.includes('全面')) return 1;
-    if (tags.includes('真题')) return 2;
-    if (tags.includes('专题')) return 3;
+    if (tags.includes('教材')) return 1;
+    if (tags.includes('全面')) return 2;
+    if (tags.includes('真题')) return 3;
     if (tags.includes('技巧')) return 4;
-    if (tags.includes('训练')) return 5;
-    if (tags.includes('规划')) return 5;
-    if (tags.includes('视频')) return 6;
-    return 7;
+    if (tags.includes('笔记')) return 5;
+    if (tags.includes('专题')) return 6;
+    if (tags.includes('速记')) return 6;
+    if (tags.includes('模板')) return 7;
+    if (tags.includes('作文')) return 7;
+    if (tags.includes('资料')) return 8;
+    if (tags.includes('视频')) return 9;
+    if (tags.includes('音频')) return 9;
+    if (tags.includes('压缩包')) return 10;
+    if (tags.includes('答案')) return 11;
+    return 12;
 }
 
 const KB_DATA = [...KB_DATA_RAW].sort((a, b) => {
     // 先按学科分组（保持学科顺序）
-    const subjectOrder = ['语文', '数学', '英语', '物理', '化学', '道法', '历史', '综合'];
+    const subjectOrder = ['语文', '数学', '英语', '物理', '化学', '道法', '课本', '综合'];
     const sa = subjectOrder.indexOf(a.subject);
     const sb = subjectOrder.indexOf(b.subject);
-    if (sa !== sb) return sa - sb;
+    if (sa !== sb) return (sa === -1 ? 99 : sa) - (sb === -1 ? 99 : sb);
     // 同学科内按权重排序
     return getFileSortWeight(a) - getFileSortWeight(b);
 });

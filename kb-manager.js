@@ -57,8 +57,9 @@ function renderKBTable() {
     tbody.innerHTML = filtered.map((f, i) => {
         const realIndex = KB_DATA.indexOf(f);
         const typeIcon = {
-            'PDF': '📄', 'DOCX': '📝', 'PPTX': '📊', 'XLSX': '📈',
-            'MP4': '🎬', 'JPG': '🖼️', 'PNG': '🖼️', 'TXT': '📋'
+            'PDF': '📄', 'DOCX': '📝', 'DOC': '📝', 'PPTX': '📊', 'XLSX': '📈',
+            'MP4': '🎬', 'MP3': '🎵', 'JPG': '🖼️', 'PNG': '🖼️', 'TXT': '📋',
+            'ZIP': '📦', 'SRT': '📋'
         }[f.type] || '📁';
 
         const statusClass = f.status === 'indexed' ? 'status-indexed'
@@ -68,7 +69,13 @@ function renderKBTable() {
 
         // 标签徽章
         const tagBadges = (f.tags || []).map(t => {
-            const tagClass = t === '全面' ? 'tag-overview' : t === '真题' ? 'tag-exam' : t === '专题' ? 'tag-topic' : t === '技巧' ? 'tag-skill' : t === '训练' ? 'tag-practice' : t === '视频' ? 'tag-video' : 'tag-other';
+            const tagClass = {
+                '全面': 'tag-overview', '真题': 'tag-exam', '专题': 'tag-topic',
+                '技巧': 'tag-skill', '训练': 'tag-practice', '视频': 'tag-video',
+                '教材': 'tag-overview', '笔记': 'tag-topic', '模板': 'tag-skill',
+                '作文': 'tag-skill', '速记': 'tag-practice', '答案': 'tag-exam',
+                '音频': 'tag-video', '压缩包': 'tag-other', '资料': 'tag-other',
+            }[t] || 'tag-other';
             return `<span class="file-tag ${tagClass}">${t}</span>`;
         }).join('');
 
@@ -98,9 +105,8 @@ function openLocalFile(index) {
     const file = KB_DATA[index];
     if (!file) return;
 
-    // 构建本地文件路径：RAG根目录/学科/文件名
-    const subjectDir = file.subject === '道法' ? '道德与法治' : file.subject;
-    const filePath = `${KB_RAG_ROOT}/${subjectDir}/${file.name}`;
+    // 使用 relPath（相对于 KB_RAG_ROOT 的真实路径）
+    const filePath = `${KB_RAG_ROOT}/${file.relPath}`;
 
     // 提示用户正在打开
     showToast(`正在打开「${file.name}」...`, 'info');
@@ -129,8 +135,9 @@ function openLocalFile(index) {
 // 显示文件路径对话框（当无法直接打开时）
 function showFilePathDialog(file, filePath) {
     const typeIcon = {
-        'PDF': '📄', 'DOCX': '📝', 'PPTX': '📊', 'XLSX': '📈',
-        'MP4': '🎬', 'JPG': '🖼️', 'PNG': '🖼️', 'TXT': '📋'
+        'PDF': '📄', 'DOCX': '📝', 'DOC': '📝', 'PPTX': '📊', 'XLSX': '📈',
+        'MP4': '🎬', 'MP3': '🎵', 'JPG': '🖼️', 'PNG': '🖼️', 'TXT': '📋',
+        'ZIP': '📦', 'SRT': '📋'
     }[file.type] || '📁';
 
     const modal = document.getElementById('filePreviewModal');
@@ -202,12 +209,19 @@ function openFilePreview(index) {
     if (!file) return;
 
     const typeIcon = {
-        'PDF': '📄', 'DOCX': '📝', 'PPTX': '📊', 'XLSX': '📈',
-        'MP4': '🎬', 'JPG': '🖼️', 'PNG': '🖼️', 'TXT': '📋'
+        'PDF': '📄', 'DOCX': '📝', 'DOC': '📝', 'PPTX': '📊', 'XLSX': '📈',
+        'MP4': '🎬', 'MP3': '🎵', 'JPG': '🖼️', 'PNG': '🖼️', 'TXT': '📋',
+        'ZIP': '📦', 'SRT': '📋'
     }[file.type] || '📁';
 
     const tagBadges = (file.tags || []).map(t => {
-        const tagClass = t === '全面' ? 'tag-overview' : t === '真题' ? 'tag-exam' : t === '专题' ? 'tag-topic' : t === '技巧' ? 'tag-skill' : t === '训练' ? 'tag-practice' : t === '视频' ? 'tag-video' : 'tag-other';
+        const tagClass = {
+            '全面': 'tag-overview', '真题': 'tag-exam', '专题': 'tag-topic',
+            '技巧': 'tag-skill', '训练': 'tag-practice', '视频': 'tag-video',
+            '教材': 'tag-overview', '笔记': 'tag-topic', '模板': 'tag-skill',
+            '作文': 'tag-skill', '速记': 'tag-practice', '答案': 'tag-exam',
+            '音频': 'tag-video', '压缩包': 'tag-other', '资料': 'tag-other',
+        }[t] || 'tag-other';
         return `<span class="file-tag ${tagClass}">${t}</span>`;
     }).join('');
 
