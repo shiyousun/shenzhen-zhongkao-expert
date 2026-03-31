@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深圳中考专家系统 · PC版</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- KaTeX 公式渲染 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <!-- Markdown 渲染 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+    <!-- 代码高亮 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/python.min.js"></script>
+    <!-- JSXGraph 几何引擎 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.8.0/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.8.0/distrib/jsxgraphcore.js"></script>
+</head>
+<body>
+    <!-- ========== 侧边栏 ========== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon">🎓</span>
+                <span class="logo-text">深圳中考专家</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a class="nav-item active" data-page="chat" onclick="switchPage('chat')">
+                <span class="nav-icon">💬</span>
+                <span class="nav-label">AI 对话</span>
+            </a>
+            <a class="nav-item" data-page="geometry" onclick="switchPage('geometry')">
+                <span class="nav-icon">📐</span>
+                <span class="nav-label">几何画板</span>
+            </a>
+            <a class="nav-item" data-page="knowledge" onclick="switchPage('knowledge')">
+                <span class="nav-icon">📚</span>
+                <span class="nav-label">知识库</span>
+            </a>
+            <a class="nav-item" data-page="exam-data" onclick="switchPage('exam-data')">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">中考数据</span>
+            </a>
+            <a class="nav-item" data-page="search" onclick="switchPage('search')">
+                <span class="nav-icon">🔍</span>
+                <span class="nav-label">智能搜索</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a class="nav-item" onclick="showSettings()">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">设置</span>
+            </a>
+            <div class="version-info">v1.0 MVP · Venus + Claude</div>
+        </div>
+    </aside>
+
+    <!-- ========== 主内容区 ========== -->
+    <main class="main-content">
+        
+        <!-- ===== 页面1: AI对话 ===== -->
+        <div class="page active" id="page-chat">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h2>🤖 全科 AI 教师</h2>
+                    <div class="chat-actions">
+                        <button class="btn btn-ghost" onclick="clearChat()" title="清空对话">
+                            <span>🗑️</span> 清空
+                        </button>
+                        <select id="modelSelect" class="model-select">
+                            <option value="claude-opus-4-6">Claude Opus 4.6 (深度推理)</option>
+                            <option value="gemini-2.5-flash">Gemini 2.5 Flash (快速)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant">
+                        <div class="message-avatar">🎓</div>
+                        <div class="message-content">
+                            <div class="message-text">
+                                <p>你好！我是深圳中考全科 AI 教师，精通<strong>语文、数学、英语、物理、化学、道德与法治、历史</strong>七大学科。</p>
+                                <p>我可以帮你：</p>
+                                <ul>
+                                    <li>📝 解答各科难题，提供详细解题过程</li>
+                                    <li>📐 绘制几何图形，动态演示数学定理</li>
+                                    <li>🔍 搜索最新考试资讯和学习资料</li>
+                                    <li>📊 查询深圳各高中录取分数线</li>
+                                    <li>📚 基于本地知识库提供精准辅导</li>
+                                </ul>
+                                <p>有什么想问的？直接说吧！💪</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <div class="input-wrapper">
+                        <textarea id="chatInput" placeholder="输入你的问题... (Shift+Enter换行, Enter发送)" rows="1" oninput="autoResizeTextarea(this)"></textarea>
+                        <div class="input-actions">
+                            <label class="btn btn-icon" title="上传图片">
+                                <span>📎</span>
+                                <input type="file" id="imageUpload" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+                            </label>
+                            <button class="btn btn-primary" id="sendBtn" onclick="sendChat()">
+                                <span id="sendIcon">➤</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="input-hints">
+                        <span class="hint-item" onclick="insertPrompt('帮我解一道数学题')">📝 解题</span>
+                        <span class="hint-item" onclick="insertPrompt('画一个等边三角形的内切圆')">📐 几何</span>
+                        <span class="hint-item" onclick="insertPrompt('搜索2026年深圳中考最新政策')">🔍 搜索</span>
+                        <span class="hint-item" onclick="insertPrompt('深圳前十名高中的录取分数线')">📊 分数线</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 页面2: 几何画板 ===== -->
+        <div class="page" id="page-geometry">
+            <div class="geometry-container">
+                <div class="geometry-header">
+                    <h2>📐 交互式几何画板</h2>
+                    <p class="subtitle">拖拽点位，实时观察几何变换</p>
+                </div>
+                <div class="geometry-topics">
+                    <button class="topic-btn active" onclick="loadGeometry('basic')">基础作图</button>
+                    <button class="topic-btn" onclick="loadGeometry('drinking_horse')">将军饮马</button>
+                    <button class="topic-btn" onclick="loadGeometry('fermat')">费马点</button>
+                    <button class="topic-btn" onclick="loadGeometry('hubugui')">胡不归</button>
+                    <button class="topic-btn" onclick="loadGeometry('apollonius')">阿氏圆</button>
+                    <button class="topic-btn" onclick="loadGeometry('quadratic')">二次函数</button>
+                    <button class="topic-btn" onclick="loadGeometry('circle')">圆的性质</button>
+                    <button class="topic-btn" onclick="loadGeometry('similar')">相似三角形</button>
+                </div>
+                <div class="geometry-workspace">
+                    <div id="jxgbox" class="jxgbox" style="width:700px;height:500px;"></div>
+                    <div class="geometry-info" id="geometryInfo">
+                        <h3 id="geoTitle">基础作图</h3>
+                        <div id="geoDesc" class="geo-desc">选择一个几何主题开始探索</div>
+                        <div id="geoMeasure" class="geo-measure"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 页面3: 知识库管理 ===== -->
+        <div class="page" id="page-knowledge">
+            <div class="kb-container">
+                <div class="kb-header">
+                    <h2>📚 知识库管理</h2>
+                    <div class="kb-actions">
+                        <button class="btn btn-primary" onclick="showUploadDialog()">
+                            <span>📤</span> 上传文件
+                        </button>
+                        <button class="btn btn-secondary" onclick="rebuildIndex()">
+                            <span>🔄</span> 重建索引
+                        </button>
+                    </div>
+                </div>
+                <div class="kb-stats" id="kbStats">
+                    <!-- 统计卡片由JS渲染 -->
+                </div>
+                <div class="kb-filter">
+                    <span class="filter-label">学科筛选：</span>
+                    <button class="filter-btn active" onclick="filterKB('all')">全部</button>
+                    <button class="filter-btn" onclick="filterKB('语文')">语文</button>
+                    <button class="filter-btn" onclick="filterKB('数学')">数学</button>
+                    <button class="filter-btn" onclick="filterKB('英语')">英语</button>
+                    <button class="filter-btn" onclick="filterKB('物理')">物理</button>
+                    <button class="filter-btn" onclick="filterKB('化学')">化学</button>
+                    <button class="filter-btn" onclick="filterKB('道法')">道法</button>
+                    <button class="filter-btn" onclick="filterKB('历史')">历史</button>
+                    <button class="filter-btn" onclick="filterKB('综合')">综合</button>
+                </div>
+                <div class="kb-table-wrapper">
+                    <table class="kb-table" id="kbTable">
+                        <thead>
+                            <tr>
+                                <th>学科</th>
+                                <th>文件名</th>
+                                <th>类型</th>
+                                <th>大小</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kbTableBody">
+                            <!-- JS渲染 -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- 拖拽上传区域 -->
+                <div class="kb-dropzone" id="kbDropzone" ondrop="handleFileDrop(event)" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')">
+                    <div class="dropzone-content">
+                        <span class="dropzone-icon">📁</span>
+                        <p>拖拽文件到此处上传</p>
+                        <p class="dropzone-hint">支持 PDF、DOCX、PPTX、TXT、JPG、PNG、MP4 等格式</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 页面4: 中考数据 (iframe嵌入) ===== -->
+        <div class="page" id="page-exam-data">
+            <div class="exam-iframe-container">
+                <iframe id="examIframe" src="http://81.71.84.242:8012/" frameborder="0" allowfullscreen></iframe>
+            </div>
+        </div>
+
+        <!-- ===== 页面5: 智能搜索 ===== -->
+        <div class="page" id="page-search">
+            <div class="search-container">
+                <div class="search-header">
+                    <h2>🔍 智能搜索引擎</h2>
+                    <p class="subtitle">整合8种搜索能力，全网获取最新学习资源</p>
+                </div>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="输入搜索内容... 例如：2026深圳中考数学压轴题" onkeydown="if(event.key==='Enter')doSearch()">
+                    <button class="btn btn-primary" onclick="doSearch()">搜索</button>
+                </div>
+                <div class="search-engines">
+                    <label class="engine-chip active"><input type="checkbox" value="tavily" checked> 🌐 Tavily</label>
+                    <label class="engine-chip active"><input type="checkbox" value="brave" checked> 🦁 Brave</label>
+                    <label class="engine-chip"><input type="checkbox" value="exa"> 🧠 Exa语义</label>
+                    <label class="engine-chip"><input type="checkbox" value="gemini"> ♊ Gemini深度</label>
+                    <label class="engine-chip"><input type="checkbox" value="wechat"> 💚 公众号</label>
+                    <label class="engine-chip"><input type="checkbox" value="xiaohongshu"> 📕 小红书</label>
+                </div>
+                <div class="search-results" id="searchResults">
+                    <div class="search-placeholder">
+                        <span class="placeholder-icon">🔍</span>
+                        <p>输入关键词开始搜索</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ========== 设置弹窗 ========== -->
+    <div class="modal-overlay" id="settingsModal" onclick="if(event.target===this)hideSettings()">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>⚙️ 系统设置</h3>
+                <button class="btn btn-icon" onclick="hideSettings()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label>Venus API 端点</label>
+                    <input type="text" id="settingApiUrl" value="http://v2.open.venus.oa.com/llmproxy/v1/chat/completions">
+                </div>
+                <div class="setting-group">
+                    <label>API Token</label>
+                    <input type="password" id="settingApiToken" value="YOUR_VENUS_API_TOKEN">
+                </div>
+                <div class="setting-group">
+                    <label>推理模型</label>
+                    <select id="settingModel">
+                        <option value="claude-opus-4-6">Claude Opus 4.6</option>
+                        <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                        <option value="deepseek-r1">DeepSeek R1</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>图片生成模型</label>
+                    <select id="settingImageModel">
+                        <option value="gemini-3.1-flash-image">Gemini Flash Image</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>RAG 知识库路径</label>
+                    <input type="text" id="settingRagPath" value="/Users/friendsun/Documents/乐天/c初三">
+                </div>
+                <div class="setting-group">
+                    <label>Temperature (创造性)</label>
+                    <input type="range" id="settingTemp" min="0" max="1" step="0.1" value="0.3" oninput="this.nextElementSibling.textContent=this.value">
+                    <span>0.3</span>
+                </div>
+                <div class="setting-group">
+                    <label>最大 Token 数</label>
+                    <input type="number" id="settingMaxTokens" value="8192" min="256" max="32768" step="256">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="hideSettings()">取消</button>
+                <button class="btn btn-primary" onclick="saveSettings()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== Toast 通知 ========== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ========== 上传对话框 ========== -->
+    <div class="modal-overlay" id="uploadModal" onclick="if(event.target===this)hideUploadDialog()">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>📤 上传知识库文件</h3>
+                <button class="btn btn-icon" onclick="hideUploadDialog()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label>选择学科</label>
+                    <select id="uploadSubject">
+                        <option value="语文">语文</option>
+                        <option value="数学">数学</option>
+                        <option value="英语">英语</option>
+                        <option value="物理">物理</option>
+                        <option value="化学">化学</option>
+                        <option value="道法">道法</option>
+                        <option value="历史">历史</option>
+                        <option value="综合">综合</option>
+                    </select>
+                </div>
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" multiple accept=".pdf,.docx,.pptx,.txt,.jpg,.jpeg,.png,.mp4,.doc,.xls,.xlsx" style="display:none" onchange="handleFileSelect(this.files)">
+                    <span class="upload-icon">📁</span>
+                    <p>点击选择文件或拖拽到此处</p>
+                    <p class="upload-hint">支持 PDF、DOCX、PPTX、TXT、图片、视频等</p>
+                </div>
+                <div id="uploadFileList" class="upload-file-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="hideUploadDialog()">取消</button>
+                <button class="btn btn-primary" onclick="confirmUpload()">确认上传</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 文件预览弹窗 ========== -->
+    <div class="modal-overlay" id="filePreviewModal" onclick="if(event.target===this)closeFilePreview()">
+        <div class="modal modal-preview">
+            <div class="modal-header">
+                <h3 class="preview-title">📄 文件预览</h3>
+                <button class="btn btn-icon" onclick="closeFilePreview()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-meta"></div>
+                <div class="preview-desc"></div>
+                <div class="preview-content"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeFilePreview()">关闭</button>
+                <button class="btn btn-secondary" onclick="closeFilePreview();showToast('文件下载功能开发中...', 'info')">
+                    <span>📥</span> 下载
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== JS 模块加载 ========== -->
+    <script src="kb-data.js"></script>
+    <script src="app.js"></script>
+    <script src="kb-manager.js"></script>
+</body>
+</html>
