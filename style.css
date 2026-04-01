@@ -1774,3 +1774,637 @@ body {
     border-radius: 0 2px 2px 0;
     animation: streamingPulse 1.5s infinite;
 }
+
+/* ========== 内联 Artifact 卡片（替代代码块） ========== */
+.inline-artifact-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-primary));
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+}
+
+.inline-artifact-block::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 2px 0 0 2px;
+}
+
+.inline-artifact-block:hover {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, var(--bg-hover), var(--bg-tertiary));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(108, 140, 255, 0.15);
+}
+
+.inline-artifact-block:active {
+    transform: translateY(0);
+}
+
+.inline-artifact-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-glow);
+    border-radius: var(--radius-sm);
+}
+
+.inline-artifact-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.inline-artifact-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inline-artifact-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.inline-artifact-lang {
+    color: var(--accent);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 10px;
+    padding: 1px 6px;
+    background: var(--accent-glow);
+    border-radius: 4px;
+}
+
+.inline-artifact-lines {
+    color: var(--text-muted);
+}
+
+.inline-artifact-action {
+    font-size: 11px;
+    color: var(--accent);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0.7;
+    transition: var(--transition);
+}
+
+.inline-artifact-block:hover .inline-artifact-action {
+    opacity: 1;
+}
+
+/* ========== 聊天输入区功能开关 ========== */
+.chat-input-toggles {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    padding: 0 4px;
+}
+
+.toggle-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 4px 10px;
+    border-radius: 16px;
+    border: 1px solid transparent;
+    transition: var(--transition);
+    user-select: none;
+}
+
+.toggle-switch:hover {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+}
+
+.toggle-switch.active {
+    color: var(--accent);
+    background: var(--accent-glow);
+    border-color: rgba(108, 140, 255, 0.3);
+}
+
+.toggle-switch .toggle-icon {
+    font-size: 14px;
+}
+
+.toggle-switch .toggle-dot {
+    width: 28px;
+    height: 16px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    position: relative;
+    transition: var(--transition);
+}
+
+.toggle-switch .toggle-dot::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    top: 1px;
+    left: 1px;
+    transition: var(--transition);
+}
+
+.toggle-switch.active .toggle-dot {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.toggle-switch.active .toggle-dot::after {
+    background: #fff;
+    left: 13px;
+}
+
+/* 深度思考动画 */
+.toggle-switch.active .toggle-icon {
+    animation: thinkPulse 2s infinite;
+}
+
+@keyframes thinkPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* 网络搜索状态提示 */
+.web-search-indicator {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(108, 140, 255, 0.08);
+    border: 1px solid rgba(108, 140, 255, 0.2);
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    color: var(--accent);
+    margin-bottom: 8px;
+}
+
+.web-search-indicator.show {
+    display: flex;
+}
+
+.web-search-indicator .loading-spinner {
+    width: 12px;
+    height: 12px;
+    border-width: 1.5px;
+}
+
+/* ========== 隐藏工具类 ========== */
+.hidden { display: none !important; }
+
+/* ========== 消息操作按钮（悬停显示） ========== */
+.message-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    justify-content: flex-start;
+}
+
+.message:hover .message-actions {
+    opacity: 1;
+}
+
+.message.user .message-actions {
+    justify-content: flex-end;
+}
+
+.msg-action-btn {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 3px 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-secondary);
+    line-height: 1;
+}
+
+.msg-action-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.msg-action-del:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+    background: rgba(248, 113, 113, 0.08);
+}
+
+/* ========== 搜索历史区域 ========== */
+.search-history-section {
+    margin-bottom: 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+}
+
+.search-history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.search-history-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.search-history-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    cursor: default;
+}
+
+.search-history-item:hover {
+    background: var(--bg-hover);
+}
+
+.search-history-icon {
+    font-size: 14px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.search-history-query {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text-primary);
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-history-query:hover {
+    color: var(--accent);
+    text-decoration: underline;
+}
+
+.search-history-time {
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.search-history-actions {
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.search-history-item:hover .search-history-actions {
+    opacity: 1;
+}
+
+.search-history-actions .btn-icon {
+    padding: 2px 4px;
+    font-size: 12px;
+}
+
+.search-history-more {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 6px 0 2px;
+    border-top: 1px solid var(--border-color);
+    margin-top: 4px;
+}
+
+/* ========== 精华收藏页面 ========== */
+.favorites-container {
+    padding: 24px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.favorites-header {
+    margin-bottom: 20px;
+}
+
+.favorites-header h2 {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+.fav-section {
+    margin-bottom: 24px;
+}
+
+.fav-section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.fav-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    transition: var(--transition);
+}
+
+.fav-item:hover {
+    border-color: var(--border-light);
+}
+
+.fav-item-search {
+    cursor: pointer;
+}
+
+.fav-item-search:hover {
+    border-color: var(--accent);
+}
+
+.fav-item-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.fav-item-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 10px;
+}
+
+.fav-badge-msg {
+    background: rgba(108, 140, 255, 0.12);
+    color: var(--accent);
+}
+
+.fav-badge-search {
+    background: rgba(74, 222, 128, 0.12);
+    color: var(--success);
+}
+
+.fav-item-time {
+    font-size: 11px;
+    color: var(--text-muted);
+    flex: 1;
+}
+
+.fav-item-del {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.fav-item:hover .fav-item-del {
+    opacity: 1;
+}
+
+.fav-item-content {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.fav-item-content .message-text {
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+.fav-item-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.fav-item-url {
+    font-size: 11px;
+    color: var(--accent);
+    margin-bottom: 4px;
+    word-break: break-all;
+}
+
+.fav-item-snippet {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* ========== 搜索结果卡片收藏按钮 ========== */
+.result-card-fav {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: var(--transition);
+    opacity: 0.5;
+}
+
+.result-card-fav:hover {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+/* ========== AI对话中联网搜索资源卡片 ========== */
+.chat-search-resources {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.chat-resources-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.chat-search-resources .search-result-cards {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.chat-search-resources .search-result-card {
+    font-size: 12px;
+}
+
+.chat-search-resources .result-card-body {
+    padding: 8px 10px;
+}
+
+.chat-search-resources .result-card-title {
+    font-size: 12px;
+    -webkit-line-clamp: 1;
+}
+
+.chat-search-resources .result-card-snippet {
+    font-size: 11px;
+    -webkit-line-clamp: 1;
+}
+
+.chat-search-resources .result-card-thumb {
+    height: 90px;
+}
+
+/* ========== 图片上传预览条 ========== */
+.image-preview-bar {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+}
+
+.image-preview-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.image-preview-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.image-preview-name {
+    font-size: 13px;
+    color: var(--text-secondary);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.image-preview-remove {
+    color: var(--danger) !important;
+    font-size: 14px;
+}
+
+/* 用户消息中的内联图片 */
+.user-image-inline {
+    margin-bottom: 8px;
+}
+
+.user-msg-image {
+    max-width: 240px;
+    max-height: 200px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    object-fit: contain;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.user-msg-image:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+/* ========== Gemini 深度研究区块 ========== */
+.gemini-deep-section {
+    border-left: 3px solid #a78bfa;
+    margin-top: 16px;
+}
+
+.gemini-deep-section .result-title {
+    color: #a78bfa;
+}
+
+/* ========== 学科快速入口卡片 ========== */
+.subject-quick-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.subject-card {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.subject-card:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+}
+
+.subject-card .card-icon {
+    font-size: 16px;
+}
+
+.subject-card .card-label {
+    font-weight: 500;
+}

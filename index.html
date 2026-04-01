@@ -50,13 +50,17 @@
                 <span class="nav-icon">🔍</span>
                 <span class="nav-label">智能搜索</span>
             </a>
+            <a class="nav-item" data-page="favorites" onclick="switchPage('favorites')">
+                <span class="nav-icon">⭐</span>
+                <span class="nav-label">精华收藏</span>
+            </a>
         </nav>
         <div class="sidebar-footer">
             <a class="nav-item" onclick="showSettings()">
                 <span class="nav-icon">⚙️</span>
                 <span class="nav-label">设置</span>
             </a>
-            <div class="version-info">v0.9.1 · 多会话并发 + 多模型</div>
+            <div class="version-info">v1.2 · 多模态图片对话 + 6引擎搜索 + 知识库描述 + 学科快捷入口</div>
         </div>
     </aside>
 
@@ -131,13 +135,41 @@
                                         <li>🔍 搜索最新考试资讯和学习资料</li>
                                         <li>📊 查询深圳各高中录取分数线</li>
                                         <li>📚 基于本地知识库提供精准辅导</li>
+                                        <li>🖼️ 支持图片上传，拍题即可识别解答</li>
                                     </ul>
-                                    <p>有什么想问的？直接说吧！💪</p>
+                                    <div class="subject-quick-cards">
+                                        <div class="subject-card" onclick="insertPrompt('帮我梳理中考语文必背古诗文61篇的重点')">
+                                            <span class="card-icon">📖</span><span class="card-label">语文</span>
+                                        </div>
+                                        <div class="subject-card" onclick="insertPrompt('讲解二次函数y=ax²+bx+c的图像与性质')">
+                                            <span class="card-icon">📐</span><span class="card-label">数学</span>
+                                        </div>
+                                        <div class="subject-card" onclick="insertPrompt('总结中考英语八大时态的结构和用法')">
+                                            <span class="card-icon">🅰️</span><span class="card-label">英语</span>
+                                        </div>
+                                        <div class="subject-card" onclick="insertPrompt('串联和并联电路的电流电压电阻特点')">
+                                            <span class="card-icon">⚡</span><span class="card-label">物理</span>
+                                        </div>
+                                        <div class="subject-card" onclick="insertPrompt('归纳酸碱盐之间的反应规律')">
+                                            <span class="card-icon">🧪</span><span class="card-label">化学</span>
+                                        </div>
+                                        <div class="subject-card" onclick="insertPrompt('2026年道法开卷考试答题模板怎么用？')">
+                                            <span class="card-icon">⚖️</span><span class="card-label">道法</span>
+                                        </div>
+                                        <div class="subject-card" onclick="insertPrompt('中国近代史大事年表：鸦片战争到新中国成立')">
+                                            <span class="card-icon">📜</span><span class="card-label">历史</span>
+                                        </div>
+                                    </div>
+                                    <p>点击上方学科卡片快速开始，或直接输入你的问题！💪</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="chat-input-area">
+                        <div class="web-search-indicator" id="webSearchIndicator">
+                            <div class="loading-spinner"></div>
+                            <span id="webSearchStatus">正在联网搜索...</span>
+                        </div>
                         <div class="input-wrapper">
                             <textarea id="chatInput" placeholder="输入你的问题... (Shift+Enter换行, Enter发送)" rows="1" oninput="autoResizeTextarea(this)"></textarea>
                             <div class="input-actions">
@@ -150,11 +182,27 @@
                                 </button>
                             </div>
                         </div>
+                        <div class="chat-input-toggles">
+                            <div class="toggle-switch" id="toggleWebSearch" onclick="toggleChatFeature('webSearch')">
+                                <span class="toggle-icon">🌐</span>
+                                <span>网络搜索</span>
+                                <span class="toggle-dot"></span>
+                            </div>
+                            <div class="toggle-switch" id="toggleDeepThink" onclick="toggleChatFeature('deepThink')">
+                                <span class="toggle-icon">🧠</span>
+                                <span>深度思考</span>
+                                <span class="toggle-dot"></span>
+                            </div>
+                        </div>
                         <div class="input-hints">
                             <span class="hint-item" onclick="insertPrompt('帮我解一道数学题')">📝 解题</span>
                             <span class="hint-item" onclick="insertPrompt('画一个等边三角形的内切圆')">📐 几何</span>
                             <span class="hint-item" onclick="insertPrompt('搜索2026年深圳中考最新政策')">🔍 搜索</span>
                             <span class="hint-item" onclick="insertPrompt('深圳前十名高中的录取分数线')">📊 分数线</span>
+                            <span class="hint-item" onclick="insertPrompt('帮我分析这篇文言文的重点实词和虚词')">📖 语文</span>
+                            <span class="hint-item" onclick="insertPrompt('用英文写一篇介绍深圳的短文，80词左右')">🅰️ 英语</span>
+                            <span class="hint-item" onclick="insertPrompt('电路中串联和并联的区别是什么？')">⚡ 物理</span>
+                            <span class="hint-item" onclick="insertPrompt('如何配平化学方程式？举个例子')">🧪 化学</span>
                         </div>
                     </div>
                 </div>
@@ -251,6 +299,7 @@
                     <button class="filter-btn" onclick="filterKB('物理')">物理</button>
                     <button class="filter-btn" onclick="filterKB('化学')">化学</button>
                     <button class="filter-btn" onclick="filterKB('道法')">道法</button>
+                    <button class="filter-btn" onclick="filterKB('历史')">历史</button>
                     <button class="filter-btn" onclick="filterKB('课本')">课本</button>
                     <button class="filter-btn" onclick="filterKB('综合')">综合</button>
                 </div>
@@ -308,10 +357,35 @@
                     <label class="engine-chip"><input type="checkbox" value="wechat"> 💚 公众号</label>
                     <label class="engine-chip"><input type="checkbox" value="xiaohongshu"> 📕 小红书</label>
                 </div>
+                <!-- 搜索历史 -->
+                <div class="search-history-section hidden" id="searchHistorySection">
+                    <div class="search-history-header">
+                        <span class="search-history-title">🕐 搜索历史</span>
+                        <button class="btn btn-ghost btn-sm" onclick="clearSearchHistory()">清空</button>
+                    </div>
+                    <div id="searchHistoryList"></div>
+                </div>
                 <div class="search-results" id="searchResults">
                     <div class="search-placeholder">
                         <span class="placeholder-icon">🔍</span>
                         <p>输入关键词开始搜索</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 页面6: 精华收藏 ===== -->
+        <div class="page" id="page-favorites">
+            <div class="favorites-container">
+                <div class="favorites-header">
+                    <h2>⭐ 精华收藏</h2>
+                    <p class="subtitle">在对话消息或搜索结果中点击 ⭐ 即可收藏到这里</p>
+                </div>
+                <div id="favoritesContent">
+                    <div class="search-placeholder">
+                        <span class="placeholder-icon">⭐</span>
+                        <p>还没有收藏内容</p>
+                        <p style="font-size:12px;margin-top:8px;">在对话消息或搜索结果中点击 ⭐ 即可收藏</p>
                     </div>
                 </div>
             </div>
