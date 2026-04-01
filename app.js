@@ -16,6 +16,52 @@ const CONFIG = {
     ragPath: '/Users/friendsun/Documents/乐天/c初三',
 };
 
+// ============================
+// 滚动控制：用户上滑时停止自动滚动
+// ============================
+let userScrolledUp = false;
+
+function initScrollControl() {
+    const container = document.getElementById('chatMessages');
+    if (!container) return;
+
+    container.addEventListener('scroll', () => {
+        // 判断是否在底部附近（50px 容差）
+        const atBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 50;
+        userScrolledUp = !atBottom;
+    });
+
+    // 监听鼠标滚轮，如果向上滚则标记
+    container.addEventListener('wheel', (e) => {
+        if (e.deltaY < 0) {
+            userScrolledUp = true;
+        }
+    });
+
+    // 触摸设备支持
+    let touchStartY = 0;
+    container.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+    });
+    container.addEventListener('touchmove', (e) => {
+        if (e.touches[0].clientY > touchStartY) {
+            // 手指向下移 = 页面向上滚
+            userScrolledUp = true;
+        }
+    });
+}
+
+function smartScrollToBottom(container) {
+    if (!userScrolledUp) {
+        container.scrollTop = container.scrollHeight;
+    }
+}
+
+function forceScrollToBottom(container) {
+    userScrolledUp = false;
+    container.scrollTop = container.scrollHeight;
+}
+
 const SYSTEM_PROMPT = `你是"深圳中考全科AI名师"，一位拥有20年教龄、深谙教育心理学的超级教育专家。你不仅精通初中八大考试科目的每一个知识点，更掌握顶级培训机构的教学秘籍——让学生用最少时间获得最大提分。你是费曼学习法的践行者，认知科学的应用者，你的目标是让每个孩子都能高效、自信地迎接中考。
 
 **你的核心教学理念：**
@@ -1257,7 +1303,7 @@ function switchSession(id) {
     if (sessionDOMCache[id]) {
         container.appendChild(sessionDOMCache[id]);
         delete sessionDOMCache[id];
-        container.scrollTop = container.scrollHeight;
+        forceScrollToBottom(container);
     } else if (session.messages.length === 0) {
         // 新会话，显示欢迎消息
         container.innerHTML = `
@@ -2002,7 +2048,7 @@ function appendMessage(role, content, isStreamingMsg = false, addToSession = tru
     `;
 
     container.appendChild(msgDiv);
-    container.scrollTop = container.scrollHeight;
+    smartScrollToBottom(container);
 
     // 保存到当前会话
     if (addToSession && !isStreamingMsg && content) {
@@ -2030,7 +2076,7 @@ function updateStreamMessage(msgDiv, content) {
     if (textDiv) {
         textDiv.innerHTML = renderMessageContent(content);
         const container = document.getElementById('chatMessages');
-        container.scrollTop = container.scrollHeight;
+        smartScrollToBottom(container);
     }
 }
 
@@ -2038,6 +2084,9 @@ async function sendChat() {
     const input = document.getElementById('chatInput');
     const userMsg = input.value.trim();
     if (!userMsg) return;
+
+    // 用户主动发消息，重置滚动状态，跟随新回复
+    userScrolledUp = false;
 
     const session = getActiveSession();
     if (!session) return;
@@ -3587,6 +3636,7 @@ window.addEventListener('DOMContentLoaded', () => {
     loadSearchHistory();   // 加载搜索历史
     loadSessions(); // 加载多会话
     switchPage('chat');
+    initScrollControl();   // 初始化滚动控制：用户上滑时停止自动跟随
     console.log('🎓 深圳中考专家系统 v1.2 已启动');
     console.log('📐 JSXGraph 几何引擎就绪');
     console.log('🤖 Venus LLM 对话引擎就绪');
