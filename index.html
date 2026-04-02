@@ -3,14 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>深圳中考专家系统 · PC版</title>
+    <title>深圳中考专家系统</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="中考专家">
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
     <!-- KaTeX 公式渲染 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-    <!-- Markdown 渲染 -->
+    <!-- Markdown 渲染 (多 CDN 源容错) -->
     <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+    <script>
+    // marked.js CDN 加载容错 — 如果主 CDN 失败，依次尝试备用源
+    if (typeof marked === 'undefined') {
+        (function() {
+            var fallbacks = [
+                'https://unpkg.com/marked@12.0.0/marked.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js',
+                'https://cdn.bootcdn.net/ajax/libs/marked/12.0.0/marked.min.js'
+            ];
+            var idx = 0;
+            function tryLoad() {
+                if (idx >= fallbacks.length) {
+                    console.warn('⚠️ 所有 marked.js CDN 源均加载失败，将使用内置备用渲染器');
+                    return;
+                }
+                var s = document.createElement('script');
+                s.src = fallbacks[idx++];
+                s.onload = function() { console.log('✅ marked.js 备用CDN加载成功:', s.src); };
+                s.onerror = function() { console.warn('❌ CDN 加载失败:', s.src); tryLoad(); };
+                document.head.appendChild(s);
+            }
+            tryLoad();
+        })();
+    }
+    </script>
     <!-- 代码高亮 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/core.min.js"></script>
@@ -21,6 +50,21 @@
     <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.8.0/distrib/jsxgraphcore.js"></script>
 </head>
 <body>
+    <!-- ========== 移动端顶栏 ========== -->
+    <header class="mobile-topbar" id="mobileTopbar">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileSidebar()">
+            <span class="hamburger-icon">☰</span>
+        </button>
+        <div class="mobile-topbar-title">
+            <span class="logo-icon">🎓</span>
+            <span>深圳中考专家</span>
+        </div>
+        <div class="mobile-topbar-actions" id="mobileTopbarActions"></div>
+    </header>
+    
+    <!-- ========== 移动端侧边栏遮罩 ========== -->
+    <div class="mobile-sidebar-overlay" id="mobileSidebarOverlay" onclick="closeMobileSidebar()"></div>
+
     <!-- ========== 侧边栏 ========== -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -60,7 +104,10 @@
                 <span class="nav-icon">⚙️</span>
                 <span class="nav-label">设置</span>
             </a>
-            <div class="version-info">v1.3 · 界面美化升级</div>
+            <div class="api-status-bar">
+                <span class="api-status-badge api-status-ok" id="apiStatusBadge">🟡 检测中...</span>
+            </div>
+            <div class="version-info">v1.7 · 精确画图+辅助线折叠</div>
         </div>
     </aside>
 
@@ -207,6 +254,26 @@
                     </div>
                 </div>
 
+                <!-- 右侧图形面板（对照查看几何图形） -->
+                <div class="figure-panel" id="figurePanel" style="display:none;">
+                    <div class="figure-panel-header">
+                        <div class="figure-panel-header-left">
+                            <h4 id="figurePanelTitle">📐 图形对照</h4>
+                            <span class="figure-panel-count" id="figurePanelCount">0</span>
+                        </div>
+                        <div class="figure-panel-actions">
+                            <button class="btn btn-icon" onclick="toggleFigurePanelPin()" id="figurePinBtn" title="固定/取消固定">📌</button>
+                            <button class="btn btn-icon" onclick="closeFigurePanel()" title="关闭">✕</button>
+                        </div>
+                    </div>
+                    <div class="figure-panel-body" id="figurePanelBody">
+                        <div class="figure-panel-placeholder">
+                            <span>📐</span>
+                            <p>对话中出现的图形会自动显示在这里</p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 右侧 Artifact 面板 -->
                 <div class="artifact-panel" id="artifactPanel" style="display:none;">
                     <div class="artifact-panel-header">
@@ -331,10 +398,36 @@
             </div>
         </div>
 
-        <!-- ===== 页面4: 中考数据 (iframe嵌入) ===== -->
+        <!-- ===== 页面4: 中考数据 ===== -->
         <div class="page" id="page-exam-data">
-            <div class="exam-iframe-container">
-                <iframe id="examIframe" src="http://81.71.84.242:8012/" frameborder="0" allowfullscreen></iframe>
+            <div class="exam-data-container">
+                <div class="exam-data-header">
+                    <h2>📊 深圳中考数据中心</h2>
+                    <p class="subtitle">2025年深圳公办/民办高中 · 中职技校分数线 · 自主招生 · 学校简介</p>
+                </div>
+                <div class="exam-data-update-banner" id="examUpdateBanner">
+                    <span class="exam-update-pulse"></span>
+                    <span>📡 数据基于 <b>2025年7月</b> 官方发布 · 系统将在 <b>2026年3-7月</b> 跟进更新</span>
+                    <a href="https://szeb.sz.gov.cn/szzkw/zkgg/zkxx/index.html" target="_blank">查看最新通知</a>
+                </div>
+                <div class="exam-data-nav" id="examDataNav">
+                    <button class="exam-nav-btn active" onclick="showExamSection('overview',this)">📊 数据总览</button>
+                    <button class="exam-nav-btn" onclick="showExamSection('scores',this)">📈 录取分数线</button>
+                    <button class="exam-nav-btn" onclick="showExamSection('science',this)">🔬 科创自招</button>
+                    <button class="exam-nav-btn" onclick="showExamSection('art',this)">🎭 主持表演</button>
+                    <button class="exam-nav-btn" onclick="showExamSection('schools',this)">🏫 学校简介</button>
+                    <button class="exam-nav-btn" onclick="showExamSection('private',this)">🏠 民办高中</button>
+                    <button class="exam-nav-btn" onclick="showExamSection('vocational',this)">🔧 中职技校</button>
+                    <button class="exam-nav-btn" onclick="showExamSection('websites',this)">🔗 相关网站</button>
+                    <button class="exam-nav-btn" onclick="showExamSection('guide',this)">📝 填报指南</button>
+                    <button class="exam-nav-btn" onclick="showExamSection('timeline',this)">📅 时间线</button>
+                </div>
+                <div class="exam-data-search">
+                    <input type="text" id="examSearchInput" placeholder="🔍 搜索学校名称、区域..." oninput="filterExamData(this.value)">
+                </div>
+                <div class="exam-data-content" id="examDataContent">
+                    <!-- JS 渲染 -->
+                </div>
             </div>
         </div>
 
@@ -354,6 +447,8 @@
                     <label class="engine-chip active"><input type="checkbox" value="brave" checked> 🦁 Brave</label>
                     <label class="engine-chip"><input type="checkbox" value="exa"> 🧠 Exa语义</label>
                     <label class="engine-chip"><input type="checkbox" value="gemini"> ♊ Gemini深度</label>
+                    <label class="engine-chip"><input type="checkbox" value="bilibili"> 📺 B站</label>
+                    <label class="engine-chip"><input type="checkbox" value="zhihu"> 💡 知乎</label>
                     <label class="engine-chip"><input type="checkbox" value="wechat"> 💚 公众号</label>
                     <label class="engine-chip"><input type="checkbox" value="xiaohongshu"> 📕 小红书</label>
                 </div>
@@ -401,31 +496,72 @@
                 <button class="btn btn-icon" onclick="hideSettings()">✕</button>
             </div>
             <div class="modal-body">
+                <!-- API 模式切换 -->
                 <div class="setting-group">
-                    <label>Venus API 端点</label>
-                    <input type="text" id="settingApiUrl" value="http://v2.open.venus.oa.com/llmproxy/v1/chat/completions">
+                    <div class="api-mode-switch">
+                        <label class="api-mode-label">
+                            <input type="checkbox" id="settingUseCustomApi" onchange="toggleCustomApiFields(this.checked)">
+                            <span class="api-mode-text">🔑 使用自定义大模型 API</span>
+                        </label>
+                        <span class="api-mode-hint">无内网访问时，填入你自己的大模型 API</span>
+                    </div>
                 </div>
-                <div class="setting-group">
-                    <label>API Token</label>
-                    <input type="password" id="settingApiToken" value="YOUR_VENUS_API_TOKEN">
+
+                <!-- Venus 内网设置区（默认显示） -->
+                <div id="venusApiSection">
+                    <div class="setting-group">
+                        <label>Venus API 端点</label>
+                        <input type="text" id="settingApiUrl" value="http://v2.open.venus.oa.com/llmproxy/v1/chat/completions">
+                    </div>
+                    <div class="setting-group">
+                        <label>API Token</label>
+                        <input type="password" id="settingApiToken" value="YOUR_VENUS_API_TOKEN">
+                    </div>
+                    <div class="setting-group">
+                        <label>推理模型</label>
+                        <select id="settingModel">
+                            <option value="claude-opus-4-6">Claude Opus 4.6 (首选)</option>
+                            <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
+                            <option value="gpt-5.4">GPT 5.4</option>
+                            <option value="gemini-3.1-pro">Gemini 3.1 Pro</option>
+                            <option value="gemini-2.5-flash">Gemini 2.5 Flash (快速)</option>
+                            <option value="deepseek-r1">DeepSeek R1</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label>图片生成模型</label>
+                        <select id="settingImageModel">
+                            <option value="gemini-3.1-flash-image">Gemini Flash Image</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="setting-group">
-                    <label>推理模型</label>
-                    <select id="settingModel">
-                        <option value="claude-opus-4-6">Claude Opus 4.6 (首选)</option>
-                        <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
-                        <option value="gpt-5.4">GPT 5.4</option>
-                        <option value="gemini-3.1-pro">Gemini 3.1 Pro</option>
-                        <option value="gemini-2.5-flash">Gemini 2.5 Flash (快速)</option>
-                        <option value="deepseek-r1">DeepSeek R1</option>
-                    </select>
+
+                <!-- 自定义 API 设置区（默认隐藏） -->
+                <div id="customApiSection" style="display:none;">
+                    <div class="custom-api-guide-card">
+                        <div class="guide-icon">💡</div>
+                        <div class="guide-text">
+                            <strong>如何获取 API Key？</strong>
+                            <p>支持 OpenAI、DeepSeek、智谱、通义千问等兼容 OpenAI 格式的大模型 API。</p>
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <label>API 端点 (Base URL)</label>
+                        <input type="text" id="settingCustomApiUrl" placeholder="例如: https://api.openai.com/v1/chat/completions">
+                        <span class="setting-hint">填写到 /chat/completions</span>
+                    </div>
+                    <div class="setting-group">
+                        <label>API Key</label>
+                        <input type="password" id="settingCustomApiKey" placeholder="例如: sk-xxxx 或 Bearer Token">
+                    </div>
+                    <div class="setting-group">
+                        <label>模型名称</label>
+                        <input type="text" id="settingCustomModelName" placeholder="例如: gpt-4o / deepseek-chat / glm-4">
+                        <span class="setting-hint">请填写 API 支持的具体模型名</span>
+                    </div>
                 </div>
-                <div class="setting-group">
-                    <label>图片生成模型</label>
-                    <select id="settingImageModel">
-                        <option value="gemini-3.1-flash-image">Gemini Flash Image</option>
-                    </select>
-                </div>
+
+                <!-- 通用设置 -->
                 <div class="setting-group">
                     <label>RAG 知识库路径</label>
                     <input type="text" id="settingRagPath" value="/Users/friendsun/Documents/乐天/c初三">
@@ -442,7 +578,49 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-ghost" onclick="hideSettings()">取消</button>
+                <button class="btn btn-ghost" onclick="resetToVenus()" title="恢复为 Venus 内网默认配置">🔄 重置</button>
                 <button class="btn btn-primary" onclick="saveSettings()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 外部用户 API 配置引导弹窗 ========== -->
+    <div class="modal-overlay" id="apiGuideModal" onclick="if(event.target===this)hideApiGuideModal()">
+        <div class="modal modal-guide">
+            <div class="modal-header">
+                <h3>🔑 配置你的大模型 API</h3>
+                <button class="btn btn-icon" onclick="hideApiGuideModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="api-guide-banner">
+                    <div class="guide-banner-icon">🤖</div>
+                    <div class="guide-banner-text">
+                        <p class="guide-banner-title">检测到无法连接内网大模型服务</p>
+                        <p class="guide-banner-desc">别担心！你可以使用自己的大模型 API（如 OpenAI、DeepSeek、智谱等）来驱动本系统，效果一样好！</p>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <label>API 端点 (Base URL) <span class="required">*</span></label>
+                    <input type="text" id="guideApiUrl" placeholder="例如: https://api.deepseek.com/v1/chat/completions">
+                    <div class="api-preset-btns">
+                        <button class="btn btn-sm btn-ghost" onclick="document.getElementById('guideApiUrl').value='https://api.openai.com/v1/chat/completions';document.getElementById('guideModelName').value='gpt-4o'">OpenAI</button>
+                        <button class="btn btn-sm btn-ghost" onclick="document.getElementById('guideApiUrl').value='https://api.deepseek.com/v1/chat/completions';document.getElementById('guideModelName').value='deepseek-chat'">DeepSeek</button>
+                        <button class="btn btn-sm btn-ghost" onclick="document.getElementById('guideApiUrl').value='https://open.bigmodel.cn/api/paas/v4/chat/completions';document.getElementById('guideModelName').value='glm-4-plus'">智谱 GLM</button>
+                        <button class="btn btn-sm btn-ghost" onclick="document.getElementById('guideApiUrl').value='https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';document.getElementById('guideModelName').value='qwen-max'">通义千问</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <label>API Key <span class="required">*</span></label>
+                    <input type="password" id="guideApiKey" placeholder="例如: sk-xxxx">
+                </div>
+                <div class="setting-group">
+                    <label>模型名称 <span class="required">*</span></label>
+                    <input type="text" id="guideModelName" placeholder="例如: gpt-4o / deepseek-chat / glm-4-plus">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="hideApiGuideModal()">稍后配置</button>
+                <button class="btn btn-primary" onclick="applyCustomApiFromGuide()">✅ 确认配置</button>
             </div>
         </div>
     </div>
@@ -508,6 +686,7 @@
     </div>
 
     <!-- ========== JS 模块加载 ========== -->
+    <script src="data.js"></script>
     <script src="kb-data.js"></script>
     <script src="app.js"></script>
     <script src="kb-manager.js"></script>

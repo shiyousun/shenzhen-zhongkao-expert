@@ -6,14 +6,24 @@
 // ============================
 // 配置
 // ============================
-const CONFIG = {
+
+// 默认内网 Venus 配置（友哥专用）
+const VENUS_DEFAULT = {
     apiUrl: 'http://v2.open.venus.oa.com/llmproxy/v1/chat/completions',
     apiToken: 'YOUR_VENUS_API_TOKEN',
     model: 'claude-opus-4-6',
     imageModel: 'gemini-3.1-flash-image',
+};
+
+const CONFIG = {
+    apiUrl: VENUS_DEFAULT.apiUrl,
+    apiToken: VENUS_DEFAULT.apiToken,
+    model: VENUS_DEFAULT.model,
+    imageModel: VENUS_DEFAULT.imageModel,
     temperature: 0.3,
     maxTokens: 8192,
     ragPath: '/Users/friendsun/Documents/乐天/c初三',
+    useCustomApi: false,  // 是否使用自定义 API（外部用户）
 };
 
 // ============================
@@ -731,6 +741,209 @@ const SYSTEM_PROMPT = `你是"深圳中考全科AI名师"，一位拥有20年教
 - 代码块：使用 \`\`\` 包裹
 - 重点：使用 **加粗** 或 > 引用
 
+## 七-B、几何图形输出规范（极其重要！精确作图！）
+
+当涉及**数学几何题**时，你**必须**用 \`[geometry]...[/geometry]\` 包裹精确的 SVG 几何图形。
+
+### 绘图核心原则：数学精确性第一！
+**绝对禁止**凭感觉估算坐标！每一个顶点坐标都必须通过严格的数学公式计算。
+- 等边三角形：顶点通过 sin(60°)=√3/2≈0.866, cos(60°)=0.5 精确计算
+- 等腰三角形：利用垂直平分线和勾股定理
+- 直角三角形：利用勾股定理
+- 圆上的点：用 (cx + r·cos(θ), cy - r·sin(θ))（注意 SVG 的 y 轴向下！用减号！）
+- 旋转变换：x' = cx + (x-cx)·cos(θ) - (y-cy)·sin(θ)，y' = cy + (x-cx)·sin(θ) + (y-cy)·cos(θ)
+
+### ⚠️ 圆上的点 —— 必须精确落在圆上（铁规则！）
+当画圆和圆上的点时，**每个标记为"圆上"的点，其坐标必须满足 (x-cx)²+(y-cy)²=r²**！
+1. 先确定圆心 (cx, cy) 和半径 r
+2. 对每个圆上的点，用角度 θ 计算精确坐标：x = cx + r·cos(θ)，y = cy - r·sin(θ)
+3. **画完后必须验证**：计算 √((x-cx)²+(y-cy)²) 是否严格等于 r，误差不可超过 0.5px
+4. 如果用已知条件（如 AB 是直径、CD⊥AB 等）推导坐标，也必须验证到圆上
+5. **绝对不允许 A、B 等标注为"圆上的点"却不在圆弧上！这是低级错误！**
+
+计算示例：圆心 O=(200,200)，r=120
+- A 在 θ=120° 位置：x=200+120·cos(120°)=200+120·(-0.5)=140，y=200-120·sin(120°)=200-120·0.866=96 → A=(140, 96)
+- 验证：√((140-200)²+(96-200)²) = √(3600+10816) = √14416 = 120.07 ≈ 120 ✅
+- B 在 θ=0° 位置：x=200+120·1=320，y=200-120·0=200 → B=(320, 200)
+- 验证：√((320-200)²+(200-200)²) = √14400 = 120 ✅
+
+### SVG 画布与配色
+- **viewBox**：\`0 0 400 350\`（标准）或 \`0 0 500 400\`（复杂图形）
+- **背景**：透明（深色主题自动适配）
+- **主线条**：\`#5b7cfa\` stroke-width="2"
+- **辅助线/虚线**：\`#e2b5ff\` stroke-width="1.5" stroke-dasharray="6,4"（必须用虚线！）
+- **标注线**：\`#ff6b6b\` stroke-width="1"
+- **填充色**：\`rgba(91,124,250,0.08)\`（主三角形）、\`rgba(167,139,250,0.08)\`（辅助三角形）
+- **顶点标注**：\`#ffffff\` font-size="15" font-weight="bold" font-family="Arial, sans-serif"
+- **数值标注**：\`#ff6b6b\` font-size="12" font-style="italic"
+
+### 几何标记符号（中考真题必备！）
+1. **等边标记**（边上的小竖线）：在线段中点垂直画 8px 短线
+   \`<line x1="mx-4" y1="my-4" x2="mx+4" y2="my+4" stroke="#5b7cfa" stroke-width="1.5"/>\`
+   双竖线表示另一组等边（偏移±3px再画一组）
+2. **直角标记**：在直角顶点画 10×10 的小正方形
+   \`<path d="M x1,y1 L x2,y2 L x3,y3" fill="none" stroke="#5b7cfa" stroke-width="1.5"/>\`
+3. **角度弧线**：用 \`<path d="M ... A rx,ry 0 0,1 ex,ey"\` 画弧，半径 20-25px
+4. **平行标记**：在平行线上画小箭头 ">" 或 ">>"
+5. **辅助线**：stroke-dasharray="6,4"（虚线，这是铁规则！解题过程中的辅助线、延长线、连线都必须用虚线！）
+
+### 文字标注位置规范
+- 顶点字母放在点的**外侧**（偏移 12-18px）
+- 上方顶点：text-anchor="middle"，y 值减 12
+- 左下顶点：text-anchor="end"，x 值减 12
+- 右下顶点：text-anchor="start"，x 值加 12
+- 线段长度标注在线段中点的外侧
+
+### 精确坐标计算公式速查
+
+**等边三角形** (边长 s，底边中点为原点)：
+- B = (-s/2, 0), C = (s/2, 0), A = (0, -s·√3/2)
+- 注意 SVG 的 y 轴向下为正！所以顶点 A 的 y 值较小
+
+**以点P为顶点、PQ为一边的等边三角形**（第三顶点R在PQ左侧）：
+- R.x = P.x + (Q.x-P.x)·cos(60°) - (Q.y-P.y)·sin(60°)
+- R.y = P.y + (Q.x-P.x)·sin(60°) + (Q.y-P.y)·cos(60°)
+- cos(60°)=0.5, sin(60°)≈0.866
+
+**以点P为顶点、PQ为一边的等边三角形**（第三顶点R在PQ右侧）：
+- R.x = P.x + (Q.x-P.x)·cos(-60°) - (Q.y-P.y)·sin(-60°)
+- R.y = P.y + (Q.x-P.x)·sin(-60°) + (Q.y-P.y)·cos(-60°)
+
+**等腰三角形** (腰长 a，底边 b)：高 h = √(a²-(b/2)²)
+
+**圆上点** (圆心 cx,cy，半径 r，角度 θ)：x = cx + r·cos(θ), y = cy + r·sin(θ)
+
+### 示例模板1：两个等边三角形共顶点（手拉手模型 — 最常见中考题型）
+
+题目：△ABC和△ADE都是等边三角形，D在BC上
+计算过程：设 B=(60,300), C=(340,300), 则 BC 中点=(200,300)
+A 在 BC 上方：A=(200, 300 - 280·√3/2) = (200, 300-242) = (200, 58)
+△ABC 是等边的：AB=BC=CA=280
+D 在 BC 上，设 BD=100，则 D=(160,300)
+△ADE 等边，AD 为边长：AD=√((200-160)²+(58-300)²)=√(1600+58564)=√60164≈245
+E 在 AD 右侧旋转 -60°：
+E.x = A.x + (D.x-A.x)·0.5 - (D.y-A.y)·(-0.866) = 200 + (-40)·0.5 - (242)·(-0.866) = 200-20+210 = 390... 需要根据实际题意调整
+
+\`\`\`
+[geometry]
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 350" width="400" height="350">
+  <!-- △ABC 等边三角形 (边长280, B左下C右下A顶上) -->
+  <polygon points="200,58 60,300 340,300" fill="rgba(91,124,250,0.08)" stroke="#5b7cfa" stroke-width="2"/>
+  <!-- 顶点标注 -->
+  <text x="200" y="45" fill="#ffffff" font-size="15" font-weight="bold" text-anchor="middle">A</text>
+  <text x="48" y="318" fill="#ffffff" font-size="15" font-weight="bold" text-anchor="end">B</text>
+  <text x="352" y="318" fill="#ffffff" font-size="15" font-weight="bold" text-anchor="start">C</text>
+  <!-- 等边标记：AB边 -->
+  <line x1="127" y1="177" x2="133" y2="181" stroke="#5b7cfa" stroke-width="1.5"/>
+  <!-- 等边标记：BC边 -->
+  <line x1="198" y1="296" x2="202" y2="304" stroke="#5b7cfa" stroke-width="1.5"/>
+  <!-- 等边标记：CA边 -->
+  <line x1="267" y1="177" x2="273" y2="181" stroke="#5b7cfa" stroke-width="1.5"/>
+</svg>
+[/geometry]
+\`\`\`
+
+### 示例模板2：直角三角形 + 辅助线（虚线）
+
+\`\`\`
+[geometry]
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <!-- 直角三角形 ABC，∠C=90° -->
+  <polygon points="60,250 340,250 340,60" fill="rgba(91,124,250,0.08)" stroke="#5b7cfa" stroke-width="2"/>
+  <!-- 直角标记 -->
+  <path d="M 320,250 L 320,230 L 340,230" fill="none" stroke="#5b7cfa" stroke-width="1.5"/>
+  <!-- 高 CD（辅助线，必须虚线！） -->
+  <line x1="340" y1="60" x2="340" y2="250" stroke="#e2b5ff" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <!-- 顶点 -->
+  <text x="48" y="268" fill="#ffffff" font-size="15" font-weight="bold" text-anchor="end">B</text>
+  <text x="352" y="268" fill="#ffffff" font-size="15" font-weight="bold" text-anchor="start">C</text>
+  <text x="352" y="50" fill="#ffffff" font-size="15" font-weight="bold" text-anchor="start">A</text>
+  <!-- 边长标注 -->
+  <text x="190" y="270" fill="#ff6b6b" font-size="12" font-style="italic" text-anchor="middle">a</text>
+</svg>
+[/geometry]
+\`\`\`
+
+### 示例模板3：圆（圆心角与圆周角）
+
+圆心 O=(175,175)，半径 r=130
+- A 在 θ=150°：x = 175+130·cos(150°) = 175+130·(-0.866) = 62.4 ≈ 62，y = 175-130·sin(150°) = 175-130·0.5 = 110 → A=(62, 110)
+  验证：√((62-175)²+(110-175)²) = √(12769+4225) = √16994 ≈ 130.4 ✅
+- B 在 θ=30°：x = 175+130·cos(30°) = 175+130·0.866 = 287.6 ≈ 288，y = 175-130·sin(30°) = 175-65 = 110 → B=(288, 110)
+  验证：√((288-175)²+(110-175)²) = √(12769+4225) = √16994 ≈ 130.4 ✅
+
+\`\`\`
+[geometry]
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 350 350" width="350" height="350">
+  <!-- 圆 O=(175,175) r=130 -->
+  <circle cx="175" cy="175" r="130" fill="none" stroke="#5b7cfa" stroke-width="2"/>
+  <!-- 圆心 O -->
+  <circle cx="175" cy="175" r="3" fill="#fbbf24"/>
+  <text x="163" y="170" fill="#fbbf24" font-size="13">O</text>
+  <!-- 圆上点 A (θ=150°): x=175+130·cos150°=62, y=175-130·sin150°=110 -->
+  <circle cx="62" cy="110" r="3" fill="#f87171"/>
+  <text x="48" y="105" fill="#ffffff" font-size="15" font-weight="bold">A</text>
+  <!-- 圆上点 B (θ=30°): x=175+130·cos30°=288, y=175-130·sin30°=110 -->
+  <circle cx="288" cy="110" r="3" fill="#38bdf8"/>
+  <text x="298" y="105" fill="#ffffff" font-size="15" font-weight="bold">B</text>
+  <!-- 弦 AB -->
+  <line x1="62" y1="110" x2="288" y2="110" stroke="#a78bfa" stroke-width="2"/>
+  <!-- 圆心角 OA, OB -->
+  <line x1="175" y1="175" x2="62" y2="110" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <line x1="175" y1="175" x2="288" y2="110" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="6,4"/>
+</svg>
+[/geometry]
+\`\`\`
+
+### 绘图铁律（必须遵守！）
+1. **凡涉及几何题，必须画图**，不可省略
+2. **数学精确性第一**：等边三角形三边必须视觉上等长，直角必须看起来是90°
+3. **辅助线必须虚线**：stroke-dasharray="6,4"，颜色用 #e2b5ff
+4. **等边/等角标记必须画**：用短竖线标记等边，用小正方形标记直角
+5. **标注不可重叠**：文字要放在图形外侧，不能与线条重叠
+6. **先算后画**：先用公式计算出所有顶点的精确坐标，再写 SVG
+7. **验证比例**：画完后心算检查——等边三角形高与底边之比应≈0.866:1
+8. **出题画图标准**：图形要像中考真题的配图一样规范、美观、精确
+9. **圆上的点必须精确**：每个声称在圆上的点，坐标必须用 (cx+r·cosθ, cy-r·sinθ) 精确计算，验证距圆心的距离=半径！A、B 这些点不能飘在圆外或圆内，这是低级错误！
+10. **画图题必须出两张图**：
+    - 第一张：**纯原题图**，只画题目已知条件中的几何元素（线段、点、圆等），**不画任何辅助线**
+    - 第二张：**辅助线图**，在解题过程中再出一张带辅助线（虚线）的完整图
+    - 两张图都用 [geometry]...[/geometry] 包裹
+    - 原题图放在题目描述之后、解题过程之前
+    - 辅助线图放在"添加辅助线"的解题步骤附近
+
+## 七-C、出题大师模式（像深圳中考真题一样出题！）
+
+当学生要求你**出题、模拟考试、练习**时，你要像一位资深命题组专家一样：
+
+### 出题格式规范
+1. **题号格式**：用 **(1)** **(2)** **(3)** 标注小问，用粗体标注分值如 **（4分）**
+2. **题目语言**：简洁严谨，用"如图"、"已知"、"求证"、"求"等数学规范用语
+3. **条件完备**：给出的条件刚好充分，不多不少
+4. **配图**：几何题**必须**附精确的 SVG 图形，放在题目文字下方
+
+### 几何出题的图形要求
+- **图形必须数学精确**：等边三角形看起来三边等长，直角看起来是 90°
+- **标注完整**：顶点字母、已知长度、角度都要在图中标出
+- **辅助线用虚线**：如果题目中有"连接CE"这种操作，CE 线段画成虚线
+- **点的位置合理**：如"D在BC上"，D 的位置要在 B 和 C 之间，且不在中点（避免特殊位置）
+- **中考风格配色**：主线蓝色，标注红色，辅助紫色虚线
+
+### 出题难度分层
+- **基础题（70%学生能做）**：直接应用公式/定理，1-2步
+- **中档题（40%学生能做）**：需要转化或构造辅助线，2-3步
+- **压轴题（10%学生能做）**：分类讨论+模型综合，3-4步，通常分(1)(2)(3)三小问递进
+
+### 示例：中考风格几何证明题
+
+**如图，△ABC 和 △ADE 都是等边三角形，点 D 在 BC 上。连接 CE。**
+
+**(1)** （4分）求证：BD = CE
+
+**(2)** （4分）求证：BD + CD = AD
+
+[然后附上精确的 SVG 配图]
+
 ## 八、考前冲刺倒计时建议
 
 ### 考前30天
@@ -1343,6 +1556,9 @@ function switchSession(id) {
     // 更新模型显示
     updateModelDisplay();
 
+    // 切换会话时刷新图形面板
+    setTimeout(() => autoRefreshFigurePanel(), 100);
+
     saveSessions();
 }
 
@@ -1742,6 +1958,252 @@ function closeArtifactPanel() {
     renderArtifactThumbnails();
 }
 
+// ============================
+// 图形对照面板（右侧固定，独立滚动）
+// ============================
+let figurePanelPinned = false; // 是否固定显示
+let figurePanelVisible = false;
+let collectedFigures = []; // 当前会话收集的所有图形 {id, svgHtml, label, type, msgIndex}
+
+function openFigurePanel() {
+    const panel = document.getElementById('figurePanel');
+    panel.style.display = 'flex';
+    figurePanelVisible = true;
+}
+
+function closeFigurePanel() {
+    const panel = document.getElementById('figurePanel');
+    panel.style.display = 'none';
+    figurePanelVisible = false;
+    figurePanelPinned = false;
+    document.getElementById('figurePinBtn').classList.remove('pinned');
+}
+
+function toggleFigurePanelPin() {
+    figurePanelPinned = !figurePanelPinned;
+    const btn = document.getElementById('figurePinBtn');
+    if (figurePanelPinned) {
+        btn.classList.add('pinned');
+        showToast('📌 图形面板已固定', 'info');
+    } else {
+        btn.classList.remove('pinned');
+    }
+}
+
+// 从对话消息区提取所有图形（含题目图片），推送到右侧面板
+function collectAndRenderFigures() {
+    const chatMessages = document.getElementById('chatMessages');
+    if (!chatMessages) return;
+
+    collectedFigures = [];
+    let figureIdx = 0;
+
+    // 遍历所有消息
+    const messages = chatMessages.querySelectorAll('.message');
+    messages.forEach((msg, msgIndex) => {
+        const isUser = msg.classList.contains('user');
+
+        // 1) 提取用户上传的图片
+        if (isUser) {
+            const imgs = msg.querySelectorAll('.user-msg-image, img');
+            imgs.forEach(img => {
+                figureIdx++;
+                collectedFigures.push({
+                    id: `fig_${figureIdx}`,
+                    html: `<img src="${img.src}" alt="用户上传图片" style="max-width:100%;border-radius:8px;">`,
+                    label: '📷 题目图片',
+                    type: 'image',
+                    msgIndex
+                });
+            });
+        }
+
+        // 2) 提取 AI 回复中的 geometry-figure
+        const figures = msg.querySelectorAll('.geometry-figure');
+        figures.forEach(fig => {
+            figureIdx++;
+            // 判断是辅助线图形还是原始图形
+            const svgContent = fig.innerHTML;
+            const hasDash = svgContent.includes('stroke-dasharray');
+            const type = hasDash ? 'auxiliary' : 'original';
+            const label = hasDash ? '📐 解题图形（含辅助线）' : '📐 几何图形';
+
+            collectedFigures.push({
+                id: `fig_${figureIdx}`,
+                html: fig.innerHTML, // 包含 ::before 伪元素外的 SVG
+                label,
+                type,
+                msgIndex
+            });
+
+            // 给原对话中的图形加上 data-figure-id 以便联动高亮
+            fig.setAttribute('data-figure-id', `fig_${figureIdx}`);
+        });
+
+        // 3) 提取其他图片（AI回复中的图片）
+        if (!isUser) {
+            const textEl = msg.querySelector('.message-text');
+            if (textEl) {
+                const standAloneImgs = textEl.querySelectorAll('img:not(.user-msg-image)');
+                standAloneImgs.forEach(img => {
+                    // 排除已在 geometry-figure 中的
+                    if (img.closest('.geometry-figure')) return;
+                    figureIdx++;
+                    collectedFigures.push({
+                        id: `fig_${figureIdx}`,
+                        html: `<img src="${img.src}" alt="图片" style="max-width:100%;border-radius:8px;">`,
+                        label: '🖼️ 图片',
+                        type: 'image',
+                        msgIndex
+                    });
+                });
+            }
+        }
+    });
+
+    // 渲染到右侧面板
+    renderFigurePanel();
+
+    // 如果有图形，自动打开面板
+    if (collectedFigures.length > 0 && !figurePanelVisible) {
+        openFigurePanel();
+        figurePanelPinned = true;
+        document.getElementById('figurePinBtn').classList.add('pinned');
+    }
+}
+
+function renderFigurePanel() {
+    const body = document.getElementById('figurePanelBody');
+    const countEl = document.getElementById('figurePanelCount');
+
+    if (collectedFigures.length === 0) {
+        body.innerHTML = `
+            <div class="figure-panel-placeholder">
+                <span>📐</span>
+                <p>对话中出现的图形会自动显示在这里</p>
+            </div>
+        `;
+        countEl.textContent = '0';
+        return;
+    }
+
+    countEl.textContent = collectedFigures.length;
+
+    // 分组：原图 / 图片 放前面直接显示，辅助线图折叠隐藏
+    const mainFigures = collectedFigures.filter(f => f.type !== 'auxiliary');
+    const auxFigures = collectedFigures.filter(f => f.type === 'auxiliary');
+
+    let html = '';
+
+    // 1) 原题图 + 图片：直接展示
+    mainFigures.forEach(fig => {
+        const badgeText = fig.type === 'original' ? '原题图' : fig.type === 'image' ? '图片' : '';
+        const badgeClass = fig.type === 'image' ? 'style="background:rgba(251,191,36,0.12);color:#fbbf24;"' : '';
+        html += `
+            <div class="figure-card" id="fcard_${fig.id}" 
+                 onclick="scrollToFigureSource('${fig.id}', ${fig.msgIndex})"
+                 title="点击定位到对话中的原位置">
+                <div class="figure-card-label">
+                    <span class="figure-card-label-text">${fig.label}</span>
+                    ${badgeText ? `<span class="figure-card-label-badge" ${badgeClass}>${badgeText}</span>` : ''}
+                </div>
+                <div class="figure-card-body">${fig.html}</div>
+            </div>
+        `;
+    });
+
+    // 2) 辅助线图：折叠区域，默认隐藏
+    if (auxFigures.length > 0) {
+        html += `
+            <div class="aux-toggle-section">
+                <button class="aux-toggle-btn" id="auxToggleBtn" onclick="toggleAuxFigures(event)">
+                    <span class="aux-toggle-icon">📐</span>
+                    <span class="aux-toggle-text">辅助线</span>
+                    <span class="aux-toggle-hint">点击查看解题辅助线</span>
+                    <span class="aux-toggle-arrow" id="auxToggleArrow">▼</span>
+                </button>
+                <div class="aux-figures-container" id="auxFiguresContainer" style="display:none;">
+        `;
+        auxFigures.forEach(fig => {
+            html += `
+                <div class="figure-card figure-card-aux" id="fcard_${fig.id}"
+                     onclick="scrollToFigureSource('${fig.id}', ${fig.msgIndex})"
+                     title="点击定位到对话中的原位置">
+                    <div class="figure-card-label">
+                        <span class="figure-card-label-text">${fig.label}</span>
+                        <span class="figure-card-label-badge" style="background:rgba(226,181,255,0.12);color:#e2b5ff;">辅助线</span>
+                    </div>
+                    <div class="figure-card-body">${fig.html}</div>
+                </div>
+            `;
+        });
+        html += `
+                </div>
+            </div>
+        `;
+    }
+
+    body.innerHTML = html;
+}
+
+// 切换辅助线图形的显示/隐藏
+function toggleAuxFigures(e) {
+    e.stopPropagation();
+    const container = document.getElementById('auxFiguresContainer');
+    const arrow = document.getElementById('auxToggleArrow');
+    const btn = document.getElementById('auxToggleBtn');
+    if (!container) return;
+    
+    const isHidden = container.style.display === 'none';
+    container.style.display = isHidden ? 'flex' : 'none';
+    arrow.textContent = isHidden ? '▲' : '▼';
+    btn.classList.toggle('aux-toggle-expanded', isHidden);
+}
+
+// 点击右侧图形卡片时，左侧对话区自动滚动到该图形对应的消息
+function scrollToFigureSource(figId, msgIndex) {
+    const chatMessages = document.getElementById('chatMessages');
+    const messages = chatMessages.querySelectorAll('.message');
+
+    if (msgIndex >= 0 && msgIndex < messages.length) {
+        const targetMsg = messages[msgIndex];
+
+        // 先移除所有高亮
+        document.querySelectorAll('.figure-card-active').forEach(el => el.classList.remove('figure-card-active'));
+
+        // 高亮右侧卡片
+        const card = document.getElementById(`fcard_${figId}`);
+        if (card) card.classList.add('figure-card-active');
+
+        // 左侧滚动到该消息
+        targetMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // 短暂闪烁高亮左侧消息
+        targetMsg.style.transition = 'box-shadow 0.3s';
+        targetMsg.style.boxShadow = '0 0 0 2px rgba(91,124,250,0.5)';
+        setTimeout(() => {
+            targetMsg.style.boxShadow = 'none';
+        }, 1500);
+    }
+}
+
+// 自动检测是否需要刷新图形面板（在消息渲染完成后调用）
+function autoRefreshFigurePanel() {
+    // 检查对话区是否有任何图形
+    const chatMessages = document.getElementById('chatMessages');
+    if (!chatMessages) return;
+
+    const hasFigures = chatMessages.querySelector('.geometry-figure') ||
+                       chatMessages.querySelector('.user-msg-image') ||
+                       chatMessages.querySelector('.message-text img');
+
+    if (hasFigures) {
+        collectAndRenderFigures();
+    } else if (!figurePanelPinned && figurePanelVisible) {
+        closeFigurePanel();
+    }
+}
+
 function copyArtifactCode() {
     const session = getActiveSession();
     if (!session || currentArtifactIndex < 0) return;
@@ -1828,14 +2290,461 @@ function switchPage(page) {
     if (page === 'search') {
         renderSearchHistory();
     }
-    // 中考数据页面已改为iframe嵌入，无需初始化
+    if (page === 'exam-data' && !window._examDataInited) {
+        showExamSection('overview');
+        window._examDataInited = true;
+    }
 }
 
 // ============================
-// Marked.js 配置
+// 中考数据渲染引擎
+// ============================
+let _currentExamSection = 'overview';
+let _currentExamFilter = '';
+
+function showExamSection(section, btn) {
+    _currentExamSection = section;
+    _currentExamFilter = '';
+    const searchInput = document.getElementById('examSearchInput');
+    if (searchInput) searchInput.value = '';
+    // 导航高亮
+    document.querySelectorAll('.exam-nav-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    else document.querySelector(`.exam-nav-btn`)?.classList.add('active');
+    // 渲染内容
+    renderExamSection(section);
+}
+
+function filterExamData(keyword) {
+    _currentExamFilter = keyword.trim().toLowerCase();
+    renderExamSection(_currentExamSection);
+}
+
+function renderExamSection(section) {
+    const container = document.getElementById('examDataContent');
+    if (!container) return;
+    const kw = _currentExamFilter;
+    switch(section) {
+        case 'overview': container.innerHTML = renderExamOverview(); break;
+        case 'scores': container.innerHTML = renderExamScores(kw); break;
+        case 'science': container.innerHTML = renderExamScience(kw); break;
+        case 'art': container.innerHTML = renderExamArt(kw); break;
+        case 'schools': container.innerHTML = renderExamSchools(kw); break;
+        case 'private': container.innerHTML = renderExamPrivate(kw); break;
+        case 'vocational': container.innerHTML = renderExamVocational(kw); break;
+        case 'websites': container.innerHTML = renderExamWebsites(); break;
+        case 'guide': container.innerHTML = renderExamGuide(); break;
+        case 'timeline': container.innerHTML = renderExamTimeline(); break;
+        default: container.innerHTML = renderExamOverview();
+    }
+}
+
+// --- 数据总览 ---
+function renderExamOverview() {
+    const publicCount = typeof scoreData !== 'undefined' ? scoreData.length : 0;
+    const privateCount = typeof privateSchoolData !== 'undefined' ? privateSchoolData.length : 0;
+    const vocCount = typeof vocationalData !== 'undefined' ? vocationalData.length : 0;
+    const sciCount = typeof scienceData !== 'undefined' ? scienceData.length : 0;
+    const artCount = typeof artData !== 'undefined' ? artData.length : 0;
+    const profileCount = typeof schoolProfiles !== 'undefined' ? schoolProfiles.length : 0;
+    return `
+        <div class="exam-overview-grid">
+            <div class="exam-stat-card" onclick="showExamSection('scores',document.querySelectorAll('.exam-nav-btn')[1])">
+                <span class="exam-stat-icon">🏫</span>
+                <span class="exam-stat-num">${publicCount}</span>
+                <span class="exam-stat-label">公办高中（含分数线）</span>
+            </div>
+            <div class="exam-stat-card" onclick="showExamSection('private',document.querySelectorAll('.exam-nav-btn')[5])">
+                <span class="exam-stat-icon">🏠</span>
+                <span class="exam-stat-num">${privateCount}</span>
+                <span class="exam-stat-label">民办高中</span>
+            </div>
+            <div class="exam-stat-card" onclick="showExamSection('vocational',document.querySelectorAll('.exam-nav-btn')[6])">
+                <span class="exam-stat-icon">🔧</span>
+                <span class="exam-stat-num">${vocCount}</span>
+                <span class="exam-stat-label">中职/技工学校</span>
+            </div>
+            <div class="exam-stat-card" onclick="showExamSection('science',document.querySelectorAll('.exam-nav-btn')[2])">
+                <span class="exam-stat-icon">🔬</span>
+                <span class="exam-stat-num">${sciCount}</span>
+                <span class="exam-stat-label">科创类自招学校</span>
+            </div>
+            <div class="exam-stat-card" onclick="showExamSection('art',document.querySelectorAll('.exam-nav-btn')[3])">
+                <span class="exam-stat-icon">🎭</span>
+                <span class="exam-stat-num">${artCount}</span>
+                <span class="exam-stat-label">主持表演类自招</span>
+            </div>
+            <div class="exam-stat-card" onclick="showExamSection('schools',document.querySelectorAll('.exam-nav-btn')[4])">
+                <span class="exam-stat-icon">📋</span>
+                <span class="exam-stat-num">${profileCount}</span>
+                <span class="exam-stat-label">学校详细简介</span>
+            </div>
+        </div>
+        <h3 class="exam-section-title">🏆 四大名校分数线一览</h3>
+        <div class="exam-table-wrapper">
+            <table class="exam-table">
+                <thead><tr><th>排名</th><th>学校</th><th>区</th><th>AC类</th><th>D类</th><th>梯队</th></tr></thead>
+                <tbody>${(typeof scoreData !== 'undefined' ? scoreData : []).slice(0, 10).map(s => `
+                    <tr>
+                        <td>${s.rank}</td>
+                        <td><a class="school-link" href="${getSchoolUrl(s.name)}" target="_blank">${s.name}</a></td>
+                        <td>${s.district}</td>
+                        <td><b>${s.ac}</b>${s.ac_w !== '-' ? ` / ${s.ac_w}` : ''}</td>
+                        <td><b>${s.d}</b>${s.d_w !== '-' ? ` / ${s.d_w}` : ''}</td>
+                        <td><span class="tier-badge tier-${s.tier}">${s.tier}</span></td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted);text-align:center;">点击上方卡片查看完整数据 | 数据来源：深圳招考办 2025年7月</p>
+    `;
+}
+
+// --- 公办高中录取分数线 ---
+function renderExamScores(kw) {
+    const data = (typeof scoreData !== 'undefined' ? scoreData : []).filter(s =>
+        !kw || s.name.toLowerCase().includes(kw) || s.district.toLowerCase().includes(kw) || s.tier.toLowerCase().includes(kw)
+    );
+    const tiers = ['全部', '四大', '十大', '前20', '二梯队', '三梯队', '四梯队', '艺术特色', '特色校'];
+    return `
+        <h3 class="exam-section-title">📈 2025年深圳公办高中录取分数线（${data.length}所）</h3>
+        <div class="exam-filter-bar">
+            ${tiers.map(t => `<button class="exam-filter-btn ${t === '全部' ? 'active' : ''}" onclick="examFilterTier(this,'scores','${t}')">${t}</button>`).join('')}
+        </div>
+        <div class="exam-table-wrapper">
+            <table class="exam-table" id="examScoreTable">
+                <thead><tr><th>排名</th><th>学校名称</th><th>区</th><th>AC线</th><th>AC走读</th><th>D线</th><th>D走读</th><th>梯队</th></tr></thead>
+                <tbody>${data.map(s => `
+                    <tr>
+                        <td>${s.rank}</td>
+                        <td><a class="school-link" href="${getSchoolUrl(s.name)}" target="_blank">${s.name}</a></td>
+                        <td>${s.district}</td>
+                        <td><b>${s.ac}</b></td>
+                        <td>${s.ac_w}</td>
+                        <td><b>${s.d}</b></td>
+                        <td>${s.d_w}</td>
+                        <td><span class="tier-badge tier-${s.tier}">${s.tier}</span></td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+// --- 科创类自招 ---
+function renderExamScience(kw) {
+    const data = (typeof scienceData !== 'undefined' ? scienceData : []).filter(s =>
+        !kw || s.name.toLowerCase().includes(kw) || (s.dir && s.dir.toLowerCase().includes(kw)) || (s.tier && s.tier.toLowerCase().includes(kw))
+    );
+    const types = ['全部', '公办', '民办'];
+    return `
+        <h3 class="exam-section-title">🔬 2025年科创类自主招生（${data.length}所）</h3>
+        <div class="exam-filter-bar">
+            ${types.map(t => `<button class="exam-filter-btn ${t === '全部' ? 'active' : ''}" onclick="examFilterTier(this,'science','${t}')">${t}</button>`).join('')}
+        </div>
+        <div class="exam-table-wrapper">
+            <table class="exam-table">
+                <thead><tr><th>学校</th><th>类型</th><th>方向</th><th>名额</th><th>控制线</th><th>统招分</th><th>梯队</th></tr></thead>
+                <tbody>${data.map(s => `
+                    <tr>
+                        <td><a class="school-link" href="${s.url || getSchoolUrl(s.name)}" target="_blank">${s.name}</a></td>
+                        <td><span class="tier-badge tier-${s.type}">${s.type}</span></td>
+                        <td>${s.dir}</td>
+                        <td>${s.quota}</td>
+                        <td>${s.ctrl}</td>
+                        <td>${s.score || '-'}</td>
+                        <td><span class="tier-badge tier-${s.tier}">${s.tier}</span></td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+// --- 主持表演类自招 ---
+function renderExamArt(kw) {
+    const data = (typeof artData !== 'undefined' ? artData : []).filter(s =>
+        !kw || s.name.toLowerCase().includes(kw) || (s.project && s.project.toLowerCase().includes(kw)) || (s.district && s.district.toLowerCase().includes(kw))
+    );
+    return `
+        <h3 class="exam-section-title">🎭 2025年主持表演类自主招生（${data.length}所）</h3>
+        <div class="exam-filter-bar">
+            ${['全部', '公办', '民办'].map(t => `<button class="exam-filter-btn ${t === '全部' ? 'active' : ''}" onclick="examFilterTier(this,'art','${t}')">${t}</button>`).join('')}
+        </div>
+        <div class="exam-table-wrapper">
+            <table class="exam-table">
+                <thead><tr><th>学校</th><th>类型</th><th>项目</th><th>详情</th><th>名额</th><th>控制线</th><th>区</th><th>备注</th></tr></thead>
+                <tbody>${data.map(s => `
+                    <tr>
+                        <td><a class="school-link" href="${s.url || getSchoolUrl(s.name)}" target="_blank">${s.name}</a></td>
+                        <td><span class="tier-badge tier-${s.type}">${s.type}</span></td>
+                        <td>${s.project}</td>
+                        <td>${s.detail}</td>
+                        <td>${s.quota}</td>
+                        <td>${s.ctrl}</td>
+                        <td>${s.district}</td>
+                        <td style="font-size:11px;color:var(--text-muted)">${s.note || ''}</td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+// --- 学校简介 ---
+function renderExamSchools(kw) {
+    const data = (typeof schoolProfiles !== 'undefined' ? schoolProfiles : []).filter(s =>
+        !kw || s.name.toLowerCase().includes(kw) || s.district.toLowerCase().includes(kw) || s.type.toLowerCase().includes(kw)
+    );
+    const types = ['全部', '四大', '十大', '前20', '二梯队', '三梯队', '四梯队', '特色校'];
+    return `
+        <h3 class="exam-section-title">🏫 深圳高中学校简介（${data.length}所）</h3>
+        <div class="exam-filter-bar">
+            ${types.map(t => `<button class="exam-filter-btn ${t === '全部' ? 'active' : ''}" onclick="examFilterTier(this,'schools','${t}')">${t}</button>`).join('')}
+        </div>
+        <div class="school-profile-grid">
+            ${data.map(s => `
+                <div class="school-profile-card">
+                    <div class="school-profile-top">
+                        <a class="school-profile-name school-link" href="${getSchoolUrl(s.name)}" target="_blank">${s.name}</a>
+                        <span class="school-profile-score">${s.score}</span>
+                    </div>
+                    <div class="school-profile-meta">
+                        <span class="tier-badge tier-${s.type}">${s.type}</span>
+                        <span>📍 ${s.district}</span>
+                    </div>
+                    <div class="school-profile-desc">${s.desc}</div>
+                    <div class="school-profile-tags">
+                        ${(s.tags || []).map(t => `<span class="school-tag">${t}</span>`).join('')}
+                    </div>
+                    ${s.recruit ? `<div class="school-profile-recruit">📋 自招：${s.recruit}</div>` : ''}
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// --- 民办高中 ---
+function renderExamPrivate(kw) {
+    const data = (typeof privateSchoolData !== 'undefined' ? privateSchoolData : []).filter(s =>
+        !kw || s.name.toLowerCase().includes(kw) || s.district.toLowerCase().includes(kw) || s.tier.toLowerCase().includes(kw)
+    );
+    return `
+        <h3 class="exam-section-title">🏠 2025年深圳民办高中录取分数线（${data.length}所）</h3>
+        <div class="exam-table-wrapper">
+            <table class="exam-table">
+                <thead><tr><th>排名</th><th>学校</th><th>区</th><th>AC线</th><th>D线</th><th>学费</th><th>梯队</th></tr></thead>
+                <tbody>${data.map(s => `
+                    <tr>
+                        <td>${s.rank}</td>
+                        <td><a class="school-link" href="${s.url || getSchoolUrl(s.name)}" target="_blank">${s.name}</a></td>
+                        <td>${s.district}</td>
+                        <td><b>${s.ac}</b></td>
+                        <td>${s.d}</td>
+                        <td style="color:var(--accent)">${s.fee || '-'}</td>
+                        <td><span class="tier-badge tier-${s.tier}">${s.tier}</span></td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+// --- 中职技校 ---
+function renderExamVocational(kw) {
+    const data = (typeof vocationalData !== 'undefined' ? vocationalData : []).filter(s =>
+        !kw || s.name.toLowerCase().includes(kw) || (s.short && s.short.toLowerCase().includes(kw)) || (s.district && s.district.toLowerCase().includes(kw))
+    );
+    return `
+        <h3 class="exam-section-title">🔧 2025年深圳中职/技工学校（${data.length}所）</h3>
+        <div class="exam-table-wrapper">
+            <table class="exam-table">
+                <thead><tr><th>学校</th><th>批次</th><th>最高分</th><th>最低分</th><th>类型</th><th>区</th><th>热门专业</th></tr></thead>
+                <tbody>${data.map(s => `
+                    <tr>
+                        <td><a class="school-link" href="${s.url || '#'}" target="_blank">${s.short || s.name}</a></td>
+                        <td>${s.batch}</td>
+                        <td><b>${s.topScore}</b></td>
+                        <td>${s.lowScore}</td>
+                        <td>${s.type}</td>
+                        <td>${s.district}</td>
+                        <td style="font-size:11px;max-width:250px">${(s.hotMajors || []).join('、')}</td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+// --- 相关网站 ---
+function renderExamWebsites() {
+    const wd = typeof websiteData !== 'undefined' ? websiteData : {};
+    let html = '';
+    if (wd.official) {
+        html += `<h3 class="exam-section-title">🏛️ 官方权威网站</h3><div class="exam-link-grid">`;
+        html += wd.official.map(s => `
+            <a class="exam-link-card" href="${s.url}" target="_blank">
+                <span class="exam-link-card-icon">${s.icon || '🔗'}</span>
+                <div class="exam-link-card-name">${s.name}</div>
+                <div class="exam-link-card-desc">${s.desc}</div>
+                <div class="exam-link-card-tags">${(s.tags || []).map(t => `<span class="exam-link-tag">${t}</span>`).join('')}</div>
+            </a>`).join('');
+        html += `</div>`;
+    }
+    if (wd.schools) {
+        html += `<h3 class="exam-section-title">🏫 名校官网</h3><div class="exam-link-grid">`;
+        html += wd.schools.map(s => `
+            <a class="exam-link-card" href="${s.url}" target="_blank">
+                <span class="exam-link-card-icon">${s.icon || '🏫'}</span>
+                <div class="exam-link-card-name">${s.name}</div>
+                <div class="exam-link-card-desc">${s.desc}</div>
+            </a>`).join('');
+        html += `</div>`;
+    }
+    if (wd.thirdParty) {
+        html += `<h3 class="exam-section-title">📚 第三方信息平台</h3><div class="exam-link-grid">`;
+        html += wd.thirdParty.map(s => `
+            <a class="exam-link-card" href="${s.url}" target="_blank">
+                <span class="exam-link-card-icon">${s.icon || '🔗'}</span>
+                <div class="exam-link-card-name">${s.name}</div>
+                <div class="exam-link-card-desc">${s.desc}</div>
+                <div class="exam-link-card-tags">${(s.tags || []).map(t => `<span class="exam-link-tag">${t}</span>`).join('')}</div>
+            </a>`).join('');
+        html += `</div>`;
+    }
+    return html || '<p>暂无网站数据</p>';
+}
+
+// --- 填报指南 ---
+function renderExamGuide() {
+    const gd = typeof guideData !== 'undefined' ? guideData : {};
+    let html = '';
+    // 核心技巧
+    if (gd.tips) {
+        html += `<h3 class="exam-section-title">💡 核心填报技巧</h3><div class="exam-tips-grid">`;
+        html += gd.tips.map(t => `
+            <div class="exam-tip-card">
+                <div class="exam-tip-title">${t.title}</div>
+                <div class="exam-tip-content">${t.content}</div>
+            </div>`).join('');
+        html += `</div>`;
+    }
+    // 官方权威资源
+    if (gd.official) {
+        html += `<h3 class="exam-section-title">📖 官方权威资源</h3><div class="exam-link-grid">`;
+        html += gd.official.map(s => `
+            <a class="exam-link-card" href="${s.url}" target="_blank">
+                <span class="exam-link-card-icon">${s.icon || '📖'}</span>
+                <div class="exam-link-card-name">${s.name} ${s.priority ? `<span class="exam-link-tag">${s.priority}</span>` : ''}</div>
+                <div class="exam-link-card-desc">${s.desc}</div>
+                <div class="exam-link-card-tags">${(s.tags || []).map(t => `<span class="exam-link-tag">${t}</span>`).join('')}</div>
+            </a>`).join('');
+        html += `</div>`;
+    }
+    // 视频攻略
+    if (gd.videos) {
+        html += `<h3 class="exam-section-title">🎬 视频攻略</h3><div class="exam-link-grid">`;
+        html += gd.videos.map(s => `
+            <a class="exam-link-card" href="${s.url}" target="_blank">
+                <span class="exam-link-card-icon">${s.icon || '🎬'}</span>
+                <div class="exam-link-card-name">${s.name}</div>
+                <div class="exam-link-card-desc">${s.desc}</div>
+                <div class="exam-link-card-tags">${(s.tags || []).map(t => `<span class="exam-link-tag">${t}</span>`).join('')}</div>
+            </a>`).join('');
+        html += `</div>`;
+    }
+    // 填报工具
+    if (gd.tools) {
+        html += `<h3 class="exam-section-title">🎯 实用工具</h3><div class="exam-link-grid">`;
+        html += gd.tools.map(s => `
+            <a class="exam-link-card" href="${s.url}" target="_blank">
+                <span class="exam-link-card-icon">${s.icon || '🎯'}</span>
+                <div class="exam-link-card-name">${s.name}</div>
+                <div class="exam-link-card-desc">${s.desc}</div>
+                <div class="exam-link-card-tags">${(s.tags || []).map(t => `<span class="exam-link-tag">${t}</span>`).join('')}</div>
+            </a>`).join('');
+        html += `</div>`;
+    }
+    // 经验文章
+    if (gd.articles) {
+        html += `<h3 class="exam-section-title">📝 经验文章</h3><div class="exam-link-grid">`;
+        html += gd.articles.map(s => `
+            <a class="exam-link-card" href="${s.url}" target="_blank">
+                <span class="exam-link-card-icon">${s.icon || '📝'}</span>
+                <div class="exam-link-card-name">${s.name}</div>
+                <div class="exam-link-card-desc">${s.desc}</div>
+                <div class="exam-link-card-tags">${(s.tags || []).map(t => `<span class="exam-link-tag">${t}</span>`).join('')}</div>
+            </a>`).join('');
+        html += `</div>`;
+    }
+    return html || '<p>暂无指南数据</p>';
+}
+
+// --- 时间线 ---
+function renderExamTimeline() {
+    const tl = typeof updateTimeline !== 'undefined' ? updateTimeline : [];
+    let html = '<h3 class="exam-section-title">📅 2026年中考重要时间线</h3>';
+    html += '<div class="exam-timeline">';
+    tl.forEach(m => {
+        html += `<div class="exam-timeline-month"><div class="exam-timeline-month-title">${m.month}</div>`;
+        (m.events || []).forEach(e => {
+            html += `<div class="exam-timeline-event ${e.important ? 'important' : ''}">
+                <div class="exam-timeline-event-title">${e.date} — ${e.title}</div>
+                <div class="exam-timeline-event-desc">${e.desc}${e.url ? ` <a href="${e.url}" target="_blank" style="color:var(--accent)">查看 →</a>` : ''}</div>
+            </div>`;
+        });
+        html += `</div>`;
+    });
+    html += '</div>';
+    // 数据更新状态
+    if (typeof dataUpdateStatus !== 'undefined') {
+        html += `<h3 class="exam-section-title" style="margin-top:24px">📡 数据更新状态</h3>`;
+        html += '<div class="exam-table-wrapper"><table class="exam-table"><thead><tr><th>数据项</th><th>状态</th><th>更新日期</th><th>来源</th></tr></thead><tbody>';
+        (dataUpdateStatus.sources || []).forEach(s => {
+            html += `<tr><td>${s.name}</td><td style="color:#4caf50">${s.status}</td><td>${s.date}</td><td>${s.source}</td></tr>`;
+        });
+        html += '</tbody></table></div>';
+    }
+    return html;
+}
+
+// --- 梯队筛选工具函数 ---
+function examFilterTier(btn, section, tier) {
+    // 切换按钮
+    btn.parentElement.querySelectorAll('.exam-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    // 筛选表格行或卡片
+    const container = document.getElementById('examDataContent');
+    if (!container) return;
+    if (tier === '全部') {
+        container.querySelectorAll('tr[style*="display:none"], .school-profile-card[style*="display:none"]').forEach(el => el.style.display = '');
+        return;
+    }
+    if (section === 'schools') {
+        container.querySelectorAll('.school-profile-card').forEach(card => {
+            const badge = card.querySelector('.tier-badge');
+            card.style.display = (badge && badge.textContent === tier) ? '' : 'none';
+        });
+    } else {
+        const tbody = container.querySelector('tbody');
+        if (tbody) {
+            tbody.querySelectorAll('tr').forEach(tr => {
+                const badge = tr.querySelector('.tier-badge');
+                if (!badge) return;
+                tr.style.display = badge.textContent === tier ? '' : 'none';
+            });
+        }
+    }
+}
+
+// ============================
+// Marked.js 配置 + 备用渲染器
 // ============================
 function initMarked() {
-    if (typeof marked === 'undefined') return;
+    if (typeof marked === 'undefined') {
+        console.warn('⚠️ marked.js 未加载，将使用内置备用渲染器');
+        return;
+    }
 
     marked.setOptions({
         highlight: function (code, lang) {
@@ -1847,6 +2756,97 @@ function initMarked() {
         breaks: true,
         gfm: true,
     });
+}
+
+/**
+ * 内置 Markdown 备用渲染器
+ * 当 marked.js CDN 加载失败时（手机网络不稳定等），提供基本 Markdown → HTML 转换
+ * 支持：标题、粗体、斜体、行内代码、代码块、表格、列表、引用、水平线、链接、图片
+ */
+function fallbackMarkdownParse(text) {
+    if (!text) return '';
+    let html = text;
+
+    // 1) 代码块 ```lang\n...\n``` → <pre><code>
+    html = html.replace(/```(\w*)\s*\n([\s\S]*?)```/g, (m, lang, code) => {
+        const escaped = code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        return `<pre><code class="language-${lang}">${escaped}</code></pre>`;
+    });
+
+    // 2) 表格（GFM）
+    html = html.replace(/^(\|.+\|)\s*\n(\|\s*[-:]+[-| :]*\|)\s*\n((?:\|.+\|\s*\n?)*)/gm, (m, headerLine, sepLine, bodyLines) => {
+        const parseRow = (line) => line.replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+        const headers = parseRow(headerLine);
+        const aligns = parseRow(sepLine).map(s => {
+            if (/^:-+:$/.test(s)) return 'center';
+            if (/^-+:$/.test(s)) return 'right';
+            return 'left';
+        });
+        let t = '<table><thead><tr>';
+        headers.forEach((h, i) => { t += `<th style="text-align:${aligns[i] || 'left'}">${h}</th>`; });
+        t += '</tr></thead><tbody>';
+        bodyLines.trim().split('\n').forEach(row => {
+            const cells = parseRow(row);
+            t += '<tr>';
+            cells.forEach((c, i) => { t += `<td style="text-align:${aligns[i] || 'left'}">${c}</td>`; });
+            t += '</tr>';
+        });
+        t += '</tbody></table>';
+        return t;
+    });
+
+    // 3) 标题 # ~ ######
+    html = html.replace(/^######\s+(.+)$/gm, '<h6>$1</h6>');
+    html = html.replace(/^#####\s+(.+)$/gm, '<h5>$1</h5>');
+    html = html.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>');
+    html = html.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>');
+
+    // 4) 水平线
+    html = html.replace(/^[-*_]{3,}\s*$/gm, '<hr>');
+
+    // 5) 引用 > 
+    html = html.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>');
+    // 合并连续引用
+    html = html.replace(/<\/blockquote>\s*<blockquote>/g, '<br>');
+
+    // 6) 无序列表
+    html = html.replace(/^(\s*)[-*+]\s+(.+)$/gm, '$1<li>$2</li>');
+    html = html.replace(/((?:<li>.*<\/li>\s*)+)/g, '<ul>$1</ul>');
+
+    // 7) 有序列表
+    html = html.replace(/^(\s*)\d+\.\s+(.+)$/gm, '$1<oli>$2</oli>');
+    html = html.replace(/((?:<oli>.*<\/oli>\s*)+)/g, (m) => {
+        return '<ol>' + m.replace(/<\/?oli>/g, (tag) => tag.replace('oli', 'li')) + '</ol>';
+    });
+
+    // 8) 粗斜体、粗体、斜体
+    html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+    // 9) 行内代码
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // 10) 图片 ![alt](url)
+    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+
+    // 11) 链接 [text](url)
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+    // 12) 换行：连续两个换行 → <p>，单个换行 → <br>
+    html = html.replace(/\n{2,}/g, '</p><p>');
+    html = html.replace(/\n/g, '<br>');
+    html = '<p>' + html + '</p>';
+
+    // 清理空段落
+    html = html.replace(/<p>\s*<\/p>/g, '');
+    // 避免块元素被包裹在 <p> 中
+    html = html.replace(/<p>\s*(<(?:h[1-6]|ul|ol|table|blockquote|pre|hr|div)[^>]*>)/g, '$1');
+    html = html.replace(/(<\/(?:h[1-6]|ul|ol|table|blockquote|pre|hr|div)>)\s*<\/p>/g, '$1');
+
+    return html;
 }
 
 // ============================
@@ -1904,6 +2904,28 @@ function renderMessageContent(text) {
         return `%%LATEX_INLINE_${latexInlines.length - 1}%%`;
     });
 
+    // 提取几何图形 [geometry]...[/geometry] → 直接渲染为内联 SVG
+    const geometryFigures = [];
+    processed = processed.replace(/\[geometry\]\s*([\s\S]*?)\s*\[\/geometry\]/gi, (match, svgCode) => {
+        // 清理 SVG 代码（去除可能的 Markdown 代码块包裹）
+        let cleanSvg = svgCode.trim();
+        // 如果 AI 误将 SVG 放在代码块中，提取出来
+        cleanSvg = cleanSvg.replace(/^```(?:svg|xml|html)?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
+        cleanSvg = cleanSvg.trim();
+
+        // 安全检查：只允许 SVG 标签
+        if (!cleanSvg.startsWith('<svg')) {
+            return match; // 不是合法的 SVG，保持原样
+        }
+
+        // 注入安全属性：禁止脚本执行
+        cleanSvg = cleanSvg.replace(/<script[\s\S]*?<\/script>/gi, '');
+        cleanSvg = cleanSvg.replace(/\bon\w+\s*=/gi, 'data-disabled=');
+
+        geometryFigures.push(cleanSvg);
+        return `%%GEOMETRY_FIGURE_${geometryFigures.length - 1}%%`;
+    });
+
     // 提取代码块，替换为 Artifact 占位符
     const codeBlocks = [];
     processed = processed.replace(/```(\w*)\s*\n([\s\S]*?)```/g, (match, lang, code) => {
@@ -1932,9 +2954,16 @@ function renderMessageContent(text) {
         return `%%CODE_ARTIFACT_${codeBlocks.length - 1}%%`;
     });
 
-    // Markdown 渲染
-    if (typeof marked !== 'undefined') {
-        processed = marked.parse(processed);
+    // Markdown 渲染（marked.js 可用则用，否则用内置备用渲染器）
+    if (typeof marked !== 'undefined' && typeof marked.parse === 'function') {
+        try {
+            processed = marked.parse(processed);
+        } catch (e) {
+            console.warn('marked.parse() 出错，切换到备用渲染器:', e);
+            processed = fallbackMarkdownParse(processed);
+        }
+    } else {
+        processed = fallbackMarkdownParse(processed);
     }
 
     // 恢复块级公式
@@ -1952,6 +2981,30 @@ function renderMessageContent(text) {
             return katex.renderToString(latexInlines[parseInt(idx)], { displayMode: false, throwOnError: false });
         } catch (e) {
             return `<code>${latexInlines[parseInt(idx)]}</code>`;
+        }
+    });
+
+    // 恢复几何图形为内联 SVG
+    processed = processed.replace(/%%GEOMETRY_FIGURE_(\d+)%%/g, (match, idx) => {
+        const svgCode = geometryFigures[parseInt(idx)];
+        if (!svgCode) return '';
+        
+        // 判断是否含辅助线（有 stroke-dasharray 的就是辅助线图）
+        const hasDashArray = svgCode.includes('stroke-dasharray');
+        
+        if (hasDashArray) {
+            // 辅助线图：默认折叠，点击展开
+            return `<div class="geometry-figure-aux-wrapper">
+                <button class="geometry-aux-reveal-btn" onclick="this.nextElementSibling.style.display='block';this.style.display='none';">
+                    <span class="aux-reveal-icon">📐</span>
+                    <span class="aux-reveal-text">辅助线</span>
+                    <span class="aux-reveal-hint">点击查看辅助线图</span>
+                </button>
+                <div class="geometry-figure geometry-figure-aux" style="display:none;">${svgCode}</div>
+            </div>`;
+        } else {
+            // 原题图：直接展示
+            return `<div class="geometry-figure">${svgCode}</div>`;
         }
     });
 
@@ -2050,6 +3103,11 @@ function appendMessage(role, content, isStreamingMsg = false, addToSession = tru
     container.appendChild(msgDiv);
     smartScrollToBottom(container);
 
+    // 非流式消息追加后，检查是否有新图形需要收集
+    if (!isStreamingMsg) {
+        setTimeout(() => autoRefreshFigurePanel(), 50);
+    }
+
     // 保存到当前会话
     if (addToSession && !isStreamingMsg && content) {
         const session = getActiveSession();
@@ -2077,6 +3135,14 @@ function updateStreamMessage(msgDiv, content) {
         textDiv.innerHTML = renderMessageContent(content);
         const container = document.getElementById('chatMessages');
         smartScrollToBottom(container);
+
+        // 防抖：流式渲染过程中实时更新图形面板（每500ms最多一次）
+        if (!updateStreamMessage._figureTimer) {
+            updateStreamMessage._figureTimer = setTimeout(() => {
+                autoRefreshFigurePanel();
+                updateStreamMessage._figureTimer = null;
+            }, 500);
+        }
     }
 }
 
@@ -2381,6 +3447,11 @@ async function sendChat() {
             }
 
             renderSessionList();
+
+            // 流式回复结束后，刷新右侧图形面板
+            if (activeSessionId === sendSessionId) {
+                setTimeout(() => autoRefreshFigurePanel(), 100);
+            }
         } else if (activeSessionId === sendSessionId && rt.streamingMsgDiv) {
             updateStreamMessage(rt.streamingMsgDiv, '*（模型未返回内容，请重试）*');
         }
@@ -2459,6 +3530,9 @@ function clearChat() {
 
     // 关闭 artifact 面板
     closeArtifactPanel();
+    // 关闭图形面板
+    closeFigurePanel();
+    collectedFigures = [];
     renderSessionList();
     showToast('对话已清空', 'success');
 }
@@ -3199,6 +4273,42 @@ async function searchXiaohongshu(query, maxResults = 5) {
     return resp.json();
 }
 
+// B站搜索（通过 Tavily + bilibili 域名限定）
+async function searchBilibili(query, maxResults = 5) {
+    const biliQuery = `${query} site:bilibili.com 中考 教学 讲解`;
+    const resp = await fetch('https://api.tavily.com/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            api_key: TAVILY_API_KEY,
+            query: biliQuery,
+            max_results: maxResults,
+            search_depth: 'basic',
+            include_domains: ['bilibili.com', 'b23.tv'],
+        }),
+    });
+    if (!resp.ok) throw new Error(`B站搜索失败: ${resp.status}`);
+    return resp.json();
+}
+
+// 知乎搜索（通过 Tavily + 知乎域名限定）
+async function searchZhihu(query, maxResults = 5) {
+    const zhihuQuery = `${query} site:zhihu.com 中考 知识点 解析`;
+    const resp = await fetch('https://api.tavily.com/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            api_key: TAVILY_API_KEY,
+            query: zhihuQuery,
+            max_results: maxResults,
+            search_depth: 'basic',
+            include_domains: ['zhihu.com', 'zhuanlan.zhihu.com'],
+        }),
+    });
+    if (!resp.ok) throw new Error(`知乎搜索失败: ${resp.status}`);
+    return resp.json();
+}
+
 // 搜索结果去重
 function deduplicateResults(results) {
     const seen = new Set();
@@ -3260,6 +4370,16 @@ async function doSearch() {
                 searchXiaohongshu(query).then(data => ({ engine: 'xiaohongshu', data })).catch(e => ({ engine: 'xiaohongshu', error: e.message }))
             );
         }
+        if (engines.includes('bilibili')) {
+            searchPromises.push(
+                searchBilibili(query).then(data => ({ engine: 'bilibili', data })).catch(e => ({ engine: 'bilibili', error: e.message }))
+            );
+        }
+        if (engines.includes('zhihu')) {
+            searchPromises.push(
+                searchZhihu(query).then(data => ({ engine: 'zhihu', data })).catch(e => ({ engine: 'zhihu', error: e.message }))
+            );
+        }
         // Gemini 深度研究（异步执行，不阻塞主搜索流程）
         let geminiPromise = null;
         if (engines.includes('gemini')) {
@@ -3276,6 +4396,8 @@ async function doSearch() {
             'exa': 'Exa语义',
             'wechat': '公众号',
             'xiaohongshu': '小红书',
+            'bilibili': 'B站',
+            'zhihu': '知乎',
         };
 
         for (const sr of searchResults) {
@@ -3283,7 +4405,7 @@ async function doSearch() {
                 console.warn(`${sr.engine} 搜索失败:`, sr.error);
                 continue;
             }
-            if (sr.engine === 'tavily' || sr.engine === 'exa' || sr.engine === 'wechat' || sr.engine === 'xiaohongshu') {
+            if (sr.engine === 'tavily' || sr.engine === 'exa' || sr.engine === 'wechat' || sr.engine === 'xiaohongshu' || sr.engine === 'bilibili' || sr.engine === 'zhihu') {
                 const sourceName = sourceMap[sr.engine] || 'Tavily';
                 const tavilyResults = (sr.data.results || []).map(r => ({
                     title: r.title,
@@ -3530,6 +4652,7 @@ document.querySelectorAll('.engine-chip').forEach(chip => {
 // 设置管理
 // ============================
 function showSettings() {
+    // 同步当前配置到设置面板
     document.getElementById('settingApiUrl').value = CONFIG.apiUrl;
     document.getElementById('settingApiToken').value = CONFIG.apiToken;
     document.getElementById('settingModel').value = CONFIG.model;
@@ -3537,6 +4660,22 @@ function showSettings() {
     document.getElementById('settingTemp').value = CONFIG.temperature;
     document.getElementById('settingTemp').nextElementSibling.textContent = CONFIG.temperature;
     document.getElementById('settingMaxTokens').value = CONFIG.maxTokens;
+
+    // 自定义 API 开关状态
+    const customToggle = document.getElementById('settingUseCustomApi');
+    if (customToggle) {
+        customToggle.checked = CONFIG.useCustomApi;
+        toggleCustomApiFields(CONFIG.useCustomApi);
+    }
+
+    // 自定义模型信息
+    const customModelName = document.getElementById('settingCustomModelName');
+    const customApiUrl = document.getElementById('settingCustomApiUrl');
+    const customApiKey = document.getElementById('settingCustomApiKey');
+    if (customModelName) customModelName.value = CONFIG.customModelName || '';
+    if (customApiUrl) customApiUrl.value = CONFIG.useCustomApi ? CONFIG.apiUrl : '';
+    if (customApiKey) customApiKey.value = CONFIG.useCustomApi ? CONFIG.apiToken : '';
+
     document.getElementById('settingsModal').classList.add('show');
 }
 
@@ -3544,16 +4683,48 @@ function hideSettings() {
     document.getElementById('settingsModal').classList.remove('show');
 }
 
+// 切换自定义 API 字段的显示/隐藏
+function toggleCustomApiFields(isCustom) {
+    const customSection = document.getElementById('customApiSection');
+    const venusSection = document.getElementById('venusApiSection');
+    if (customSection) customSection.style.display = isCustom ? 'block' : 'none';
+    if (venusSection) venusSection.style.display = isCustom ? 'none' : 'block';
+}
+
 function saveSettings() {
-    CONFIG.apiUrl = document.getElementById('settingApiUrl').value;
-    CONFIG.apiToken = document.getElementById('settingApiToken').value;
-    CONFIG.model = document.getElementById('settingModel').value;
+    const useCustom = document.getElementById('settingUseCustomApi')?.checked || false;
+    CONFIG.useCustomApi = useCustom;
+
+    if (useCustom) {
+        // 自定义 API 模式
+        const customUrl = document.getElementById('settingCustomApiUrl').value.trim();
+        const customKey = document.getElementById('settingCustomApiKey').value.trim();
+        const customModel = document.getElementById('settingCustomModelName').value.trim();
+
+        if (!customUrl || !customKey || !customModel) {
+            showToast('请填写完整的 API 信息（端点、Key、模型名）', 'warning');
+            return;
+        }
+
+        CONFIG.apiUrl = customUrl;
+        CONFIG.apiToken = customKey;
+        CONFIG.model = customModel;
+        CONFIG.customModelName = customModel;
+        CONFIG.customApiUrl = customUrl;
+        CONFIG.customApiKey = customKey;
+    } else {
+        // Venus 内网模式
+        CONFIG.apiUrl = document.getElementById('settingApiUrl').value || VENUS_DEFAULT.apiUrl;
+        CONFIG.apiToken = document.getElementById('settingApiToken').value || VENUS_DEFAULT.apiToken;
+        CONFIG.model = document.getElementById('settingModel').value || VENUS_DEFAULT.model;
+    }
+
     CONFIG.ragPath = document.getElementById('settingRagPath').value;
     CONFIG.temperature = parseFloat(document.getElementById('settingTemp').value);
     CONFIG.maxTokens = parseInt(document.getElementById('settingMaxTokens').value);
 
     // 同步到模型选择器
-    document.getElementById('modelSelect').value = CONFIG.model;
+    updateModelSelector();
 
     // 保存到 localStorage
     try {
@@ -3561,7 +4732,29 @@ function saveSettings() {
     } catch (e) { }
 
     hideSettings();
-    showToast('设置已保存', 'success');
+    showToast(useCustom ? '✅ 自定义 API 配置已保存' : '✅ 设置已保存', 'success');
+}
+
+// 更新顶部模型选择器
+function updateModelSelector() {
+    const sel = document.getElementById('modelSelect');
+    if (!sel) return;
+    if (CONFIG.useCustomApi) {
+        // 自定义模式：显示用户配置的模型
+        let customOpt = sel.querySelector('option[value="custom-model"]');
+        if (!customOpt) {
+            customOpt = document.createElement('option');
+            customOpt.value = 'custom-model';
+            sel.appendChild(customOpt);
+        }
+        customOpt.textContent = `🔑 ${CONFIG.customModelName || '自定义模型'}`;
+        sel.value = 'custom-model';
+    } else {
+        // Venus 模式
+        const customOpt = sel.querySelector('option[value="custom-model"]');
+        if (customOpt) customOpt.remove();
+        sel.value = CONFIG.model;
+    }
 }
 
 function loadSettings() {
@@ -3577,13 +4770,130 @@ function loadSettings() {
                 cfg.imageModel = cfg.imageModel.replace('venus/', '');
             }
             Object.assign(CONFIG, cfg);
-            document.getElementById('modelSelect').value = CONFIG.model;
+            updateModelSelector();
         }
     } catch (e) { }
 }
 
+// Venus 内网连通性检测 — 非阻塞，自动引导外部用户
+async function checkVenusConnectivity() {
+    // 如果已经在使用自定义 API，跳过检测
+    if (CONFIG.useCustomApi) {
+        updateApiStatusBadge('custom');
+        return;
+    }
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000); // 4秒超时
+
+        const resp = await fetch(VENUS_DEFAULT.apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${VENUS_DEFAULT.apiToken}`,
+            },
+            body: JSON.stringify({
+                model: 'gemini-2.5-flash',
+                messages: [{ role: 'user', content: 'hi' }],
+                max_tokens: 1,
+            }),
+            signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (resp.ok || resp.status === 400 || resp.status === 401 || resp.status === 429) {
+            // 能连通 Venus（包括认证错误等，至少说明网络通）
+            updateApiStatusBadge('venus');
+            console.log('✅ Venus 内网连通，使用默认配置');
+        } else {
+            throw new Error('非预期状态码');
+        }
+    } catch (err) {
+        console.warn('⚠️ Venus 内网不可达，可能是外部网络:', err.message);
+        updateApiStatusBadge('disconnected');
+
+        // 如果没有保存过自定义配置，弹出引导
+        if (!CONFIG.useCustomApi && !CONFIG.customApiUrl) {
+            setTimeout(() => showApiGuideModal(), 1500);
+        }
+    }
+}
+
+// 更新 API 状态徽章
+function updateApiStatusBadge(status) {
+    const badge = document.getElementById('apiStatusBadge');
+    if (!badge) return;
+    const map = {
+        'venus': { text: '🟢 Venus 内网', cls: 'api-status-ok' },
+        'custom': { text: '🔑 自定义 API', cls: 'api-status-custom' },
+        'disconnected': { text: '🔴 未连接', cls: 'api-status-err' },
+    };
+    const info = map[status] || map['disconnected'];
+    badge.textContent = info.text;
+    badge.className = `api-status-badge ${info.cls}`;
+}
+
+// 外部用户 API 配置引导弹窗
+function showApiGuideModal() {
+    document.getElementById('apiGuideModal').classList.add('show');
+}
+
+function hideApiGuideModal() {
+    document.getElementById('apiGuideModal').classList.remove('show');
+}
+
+function applyCustomApiFromGuide() {
+    const url = document.getElementById('guideApiUrl').value.trim();
+    const key = document.getElementById('guideApiKey').value.trim();
+    const model = document.getElementById('guideModelName').value.trim();
+
+    if (!url || !key || !model) {
+        showToast('请填写完整的 API 信息', 'warning');
+        return;
+    }
+
+    CONFIG.useCustomApi = true;
+    CONFIG.apiUrl = url;
+    CONFIG.apiToken = key;
+    CONFIG.model = model;
+    CONFIG.customModelName = model;
+    CONFIG.customApiUrl = url;
+    CONFIG.customApiKey = key;
+
+    try {
+        localStorage.setItem('szzkConfig', JSON.stringify(CONFIG));
+    } catch (e) { }
+
+    updateModelSelector();
+    updateApiStatusBadge('custom');
+    hideApiGuideModal();
+    showToast('✅ 自定义大模型配置成功！可以正常使用了', 'success');
+}
+
+// 快速重置为 Venus 内网模式
+function resetToVenus() {
+    CONFIG.useCustomApi = false;
+    CONFIG.apiUrl = VENUS_DEFAULT.apiUrl;
+    CONFIG.apiToken = VENUS_DEFAULT.apiToken;
+    CONFIG.model = VENUS_DEFAULT.model;
+    CONFIG.imageModel = VENUS_DEFAULT.imageModel;
+
+    try {
+        localStorage.setItem('szzkConfig', JSON.stringify(CONFIG));
+    } catch (e) { }
+
+    updateModelSelector();
+    updateApiStatusBadge('venus');
+    showToast('已切回 Venus 内网模式', 'success');
+}
+
 // 模型选择联动
 document.getElementById('modelSelect')?.addEventListener('change', (e) => {
+    if (e.target.value === 'custom-model') {
+        // 自定义模型不变更，保持当前自定义配置
+        return;
+    }
     CONFIG.model = e.target.value;
 });
 
@@ -3637,15 +4947,88 @@ window.addEventListener('DOMContentLoaded', () => {
     loadSessions(); // 加载多会话
     switchPage('chat');
     initScrollControl();   // 初始化滚动控制：用户上滑时停止自动跟随
-    console.log('🎓 深圳中考专家系统 v1.2 已启动');
+    initMobile();          // 初始化移动端适配
+    checkVenusConnectivity(); // 检测 Venus 内网连通性，引导外部用户配置
+    console.log('🎓 深圳中考专家系统 v1.6 已启动');
     console.log('📐 JSXGraph 几何引擎就绪');
     console.log('🤖 Venus LLM 对话引擎就绪');
     console.log(`📚 知识库: ${KB_DATA.length} 个文件（全部含描述）`);
     console.log('💬 多会话系统就绪');
     console.log('📦 Artifact 系统就绪');
-    console.log('🌐 6引擎搜索就绪（Tavily/Brave/Exa/Gemini/公众号/小红书）');
+    console.log('🌐 8引擎搜索就绪（Tavily/Brave/Exa/Gemini/B站/知乎/公众号/小红书）');
     console.log('🧠 深度思考模式就绪');
     console.log('⭐ 精华收藏系统就绪');
     console.log('🖼️ 多模态图片对话就绪');
     console.log('📝 学科快捷提问模板就绪');
+    console.log('📱 移动端适配就绪');
+    console.log('🔑 自定义 API 模式就绪');
 });
+
+// ============================
+// 移动端适配
+// ============================
+function initMobile() {
+    // 检测是否移动端
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        // 手机端默认隐藏会话面板
+        const panel = document.getElementById('sessionPanel');
+        const mini = document.getElementById('sessionMiniBar');
+        if (panel) panel.style.display = 'none';
+        if (mini) mini.style.display = 'none';
+    }
+
+    // 监听窗口大小变化
+    window.addEventListener('resize', () => {
+        const nowMobile = window.innerWidth <= 768;
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileSidebarOverlay');
+        
+        if (!nowMobile) {
+            // 恢复桌面端
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('show');
+            sidebar.style.left = '';
+        }
+    });
+
+    // 几何画板在手机端需要重绘适配宽度
+    if (isMobile && typeof geometryBoard !== 'undefined' && geometryBoard) {
+        setTimeout(() => {
+            const box = document.getElementById('jxgbox');
+            if (box) {
+                geometryBoard.resizeContainer(box.clientWidth, 320);
+            }
+        }, 300);
+    }
+}
+
+function toggleMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobileSidebarOverlay');
+    
+    if (sidebar.classList.contains('mobile-open')) {
+        closeMobileSidebar();
+    } else {
+        sidebar.classList.add('mobile-open');
+        overlay.classList.add('show');
+    }
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobileSidebarOverlay');
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('show');
+}
+
+// 改写 switchPage 让手机端自动关闭侧边栏
+const _originalSwitchPage = switchPage;
+switchPage = function(page) {
+    _originalSwitchPage(page);
+    // 手机端切换页面后自动关闭侧边栏
+    if (window.innerWidth <= 768) {
+        closeMobileSidebar();
+    }
+};
