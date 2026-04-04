@@ -3297,6 +3297,99 @@ body {
     box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 
+/* 视频缩略图包装 */
+.user-video-wrap {
+    display: inline-block;
+    position: relative;
+}
+
+.user-video-badge {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    padding: 2px 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 6px;
+    backdrop-filter: blur(4px);
+}
+
+.user-video-placeholder {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 18px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* 预览条中的视频缩略图 */
+.media-thumb-wrap {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.video-thumb-wrap .image-preview-thumb {
+    border-color: var(--accent);
+}
+
+.video-badge {
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    padding: 1px 6px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 600;
+    border-radius: 4px;
+    line-height: 1.4;
+}
+
+.video-preview-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-tertiary);
+    border: 2px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+/* ========== 拖拽高亮效果 ========== */
+.input-wrapper.drag-over-active {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px var(--accent-glow), 0 0 20px rgba(91, 124, 250, 0.15) !important;
+    background: rgba(91, 124, 250, 0.04) !important;
+}
+
+.input-wrapper.drag-over-active::after {
+    content: '📎 松开以添加图片/视频';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+    pointer-events: none;
+    z-index: 10;
+    white-space: nowrap;
+}
+
+/* 拖拽时让 input-wrapper 可定位 */
+.input-wrapper {
+    position: relative;
+}
+
 /* ========== Gemini 深度研究区块 ========== */
 .gemini-deep-section {
     border-left: 3px solid #a78bfa;

@@ -3171,10 +3171,20 @@ async function sendChat() {
     const previewBar = document.getElementById('imagePreviewBar');
     if (previewBar) { previewBar.style.display = 'none'; previewBar.innerHTML = ''; }
 
-    // 显示用户消息（含图片缩略图）
-    const userDisplayContent = imageToSend
-        ? `<div class="user-image-inline"><img src="${imageToSend.previewUrl}" alt="${imageToSend.fileName}" class="user-msg-image"></div>\n\n${userMsg || '请分析这张图片'}`
-        : userMsg;
+    // 显示用户消息（含图片/视频缩略图）
+    let userDisplayContent;
+    if (imageToSend) {
+        if (imageToSend.isVideo) {
+            const thumbHtml = imageToSend.previewUrl
+                ? `<div class="user-image-inline"><div class="user-video-wrap"><img src="${imageToSend.previewUrl}" alt="${imageToSend.fileName}" class="user-msg-image"><span class="user-video-badge">▶ 视频</span></div></div>`
+                : `<div class="user-image-inline"><div class="user-video-placeholder">🎬 ${imageToSend.fileName}</div></div>`;
+            userDisplayContent = `${thumbHtml}\n\n${userMsg || '请分析这个视频'}`;
+        } else {
+            userDisplayContent = `<div class="user-image-inline"><img src="${imageToSend.previewUrl}" alt="${imageToSend.fileName}" class="user-msg-image"></div>\n\n${userMsg || '请分析这张图片'}`;
+        }
+    } else {
+        userDisplayContent = userMsg;
+    }
     appendMessage('user', userDisplayContent);
     input.value = '';
     autoResizeTextarea(input);
@@ -3296,25 +3306,44 @@ async function sendChat() {
             finalSystemPrompt += webSearchContext;
         }
 
-        // 构建用户消息（支持多模态图片）
+        // 构建用户消息（支持多模态图片/视频）
         let finalUserContent;
         if (imageToSend) {
-            // 多模态消息格式
-            finalUserContent = [
-                {
-                    type: 'image_url',
-                    image_url: {
-                        url: `data:${imageToSend.mimeType};base64,${imageToSend.base64}`,
+            if (imageToSend.isVideo) {
+                // 视频：发送截帧图 + 说明
+                if (imageToSend.previewUrl) {
+                    finalUserContent = [
+                        {
+                            type: 'image_url',
+                            image_url: { url: imageToSend.previewUrl },
+                        },
+                        {
+                            type: 'text',
+                            text: (deepThinkPrefix || '') + `[用户上传了视频：${imageToSend.fileName}，以下是视频截帧]\n\n${userMsg || '请分析这个视频截帧内容'}`,
+                        },
+                    ];
+                } else {
+                    finalUserContent = (deepThinkPrefix || '') + `[用户上传了视频：${imageToSend.fileName}]\n\n${userMsg || '请描述你想了解这个视频的什么内容'}`;
+                }
+                assignedModel = CONFIG.imageModel || 'gemini-3.1-flash-image';
+                rt.assignedModel = assignedModel;
+            } else {
+                // 图片：多模态消息格式
+                finalUserContent = [
+                    {
+                        type: 'image_url',
+                        image_url: {
+                            url: `data:${imageToSend.mimeType};base64,${imageToSend.base64}`,
+                        },
                     },
-                },
-                {
-                    type: 'text',
-                    text: (deepThinkPrefix ? deepThinkPrefix : '') + (userMsg || '请分析这张图片的内容，如果是题目请帮我解答。'),
-                },
-            ];
-            // 图片对话强制使用图片模型
-            assignedModel = CONFIG.imageModel || 'gemini-3.1-flash-image';
-            rt.assignedModel = assignedModel;
+                    {
+                        type: 'text',
+                        text: (deepThinkPrefix || '') + (userMsg || '请分析这张图片的内容，如果是题目请帮我解答。'),
+                    },
+                ];
+                assignedModel = CONFIG.imageModel || 'gemini-3.1-flash-image';
+                rt.assignedModel = assignedModel;
+            }
         } else {
             finalUserContent = deepThinkPrefix ? deepThinkPrefix + userMsg : userMsg;
         }
@@ -3572,45 +3601,105 @@ function insertPrompt(text) {
     autoResizeTextarea(input);
 }
 
-// 图片上传状态
-let pendingImage = null; // { base64, mimeType, fileName, previewUrl }
+// 图片/视频上传状态
+let pendingImage = null; // { base64, mimeType, fileName, previewUrl, isVideo }
 
-function handleImageUpload(input) {
-    const file = input.files?.[0];
+// 支持的媒体类型
+const VALID_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml'];
+const VALID_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+
+/**
+ * 通用媒体文件处理（图片/视频）
+ * 来源：file input / 粘贴 / 拖拽 统一走此函数
+ */
+function processMediaFile(file) {
     if (!file) return;
 
-    // 验证文件类型和大小
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-        showToast('仅支持 JPG/PNG/GIF/WebP 格式图片', 'warning');
-        input.value = '';
+    const isImage = file.type.startsWith('image/') || VALID_IMAGE_TYPES.includes(file.type);
+    const isVideo = file.type.startsWith('video/') || VALID_VIDEO_TYPES.includes(file.type);
+
+    if (!isImage && !isVideo) {
+        showToast('仅支持图片（JPG/PNG/GIF/WebP）和视频（MP4/WebM）格式', 'warning');
         return;
     }
-    if (file.size > 10 * 1024 * 1024) {
-        showToast('图片大小不能超过 10MB', 'warning');
-        input.value = '';
+
+    const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+    const sizeLabel = isVideo ? '50MB' : '10MB';
+    if (file.size > maxSize) {
+        showToast(`${isVideo ? '视频' : '图片'}大小不能超过 ${sizeLabel}`, 'warning');
         return;
     }
 
     const reader = new FileReader();
     reader.onload = (e) => {
-        const base64Full = e.target.result; // data:image/xxx;base64,...
+        const base64Full = e.target.result;
         const base64Data = base64Full.split(',')[1];
-        pendingImage = {
-            base64: base64Data,
-            mimeType: file.type,
-            fileName: file.name,
-            previewUrl: base64Full,
-        };
-        showImagePreview(pendingImage);
-        showToast(`📎 已添加图片「${file.name}」，输入问题后发送`, 'success');
+
+        if (isVideo) {
+            // 视频：生成缩略图用于预览
+            const videoEl = document.createElement('video');
+            videoEl.src = base64Full;
+            videoEl.muted = true;
+            videoEl.currentTime = 1; // 跳到 1 秒截帧
+            videoEl.onloadeddata = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.min(videoEl.videoWidth, 320);
+                canvas.height = Math.round(canvas.width * videoEl.videoHeight / videoEl.videoWidth);
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+                const thumbUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+                pendingImage = {
+                    base64: base64Data,
+                    mimeType: file.type,
+                    fileName: file.name,
+                    previewUrl: thumbUrl,
+                    videoDataUrl: base64Full,
+                    isVideo: true,
+                };
+                showMediaPreview(pendingImage);
+                showToast(`🎬 已添加视频「${file.name}」，输入问题后发送`, 'success');
+            };
+            videoEl.onerror = () => {
+                // 截帧失败也允许上传
+                pendingImage = {
+                    base64: base64Data,
+                    mimeType: file.type,
+                    fileName: file.name,
+                    previewUrl: '',
+                    videoDataUrl: base64Full,
+                    isVideo: true,
+                };
+                showMediaPreview(pendingImage);
+                showToast(`🎬 已添加视频「${file.name}」，输入问题后发送`, 'success');
+            };
+        } else {
+            // 图片
+            pendingImage = {
+                base64: base64Data,
+                mimeType: file.type,
+                fileName: file.name,
+                previewUrl: base64Full,
+                isVideo: false,
+            };
+            showMediaPreview(pendingImage);
+            showToast(`📎 已添加图片「${file.name}」，输入问题后发送`, 'success');
+        }
     };
     reader.readAsDataURL(file);
+}
+
+// file input onchange 兼容旧接口
+function handleImageUpload(input) {
+    const file = input.files?.[0];
+    if (file) processMediaFile(file);
     input.value = '';
 }
 
-function showImagePreview(imgData) {
-    // 在输入区域上方显示图片预览
+function showMediaPreview(mediaData) {
+    // 在输入区域上方显示预览
     let previewBar = document.getElementById('imagePreviewBar');
     if (!previewBar) {
         previewBar = document.createElement('div');
@@ -3619,15 +3708,35 @@ function showImagePreview(imgData) {
         const inputWrapper = document.querySelector('.input-wrapper');
         inputWrapper.parentNode.insertBefore(previewBar, inputWrapper);
     }
-    previewBar.innerHTML = `
-        <div class="image-preview-item">
-            <img src="${imgData.previewUrl}" alt="预览" class="image-preview-thumb">
-            <span class="image-preview-name">${imgData.fileName}</span>
-            <button class="btn btn-icon image-preview-remove" onclick="removeImagePreview()" title="移除图片">✕</button>
-        </div>
-    `;
+
+    if (mediaData.isVideo) {
+        const thumbHtml = mediaData.previewUrl
+            ? `<img src="${mediaData.previewUrl}" alt="视频预览" class="image-preview-thumb">`
+            : `<div class="video-preview-placeholder">🎬</div>`;
+        previewBar.innerHTML = `
+            <div class="image-preview-item">
+                <div class="media-thumb-wrap video-thumb-wrap">
+                    ${thumbHtml}
+                    <span class="video-badge">▶ 视频</span>
+                </div>
+                <span class="image-preview-name">🎬 ${mediaData.fileName}</span>
+                <button class="btn btn-icon image-preview-remove" onclick="removeImagePreview()" title="移除">✕</button>
+            </div>
+        `;
+    } else {
+        previewBar.innerHTML = `
+            <div class="image-preview-item">
+                <img src="${mediaData.previewUrl}" alt="预览" class="image-preview-thumb">
+                <span class="image-preview-name">${mediaData.fileName}</span>
+                <button class="btn btn-icon image-preview-remove" onclick="removeImagePreview()" title="移除图片">✕</button>
+            </div>
+        `;
+    }
     previewBar.style.display = 'flex';
 }
+
+// 向后兼容
+function showImagePreview(imgData) { showMediaPreview(imgData); }
 
 function removeImagePreview() {
     pendingImage = null;
@@ -3636,6 +3745,91 @@ function removeImagePreview() {
         previewBar.style.display = 'none';
         previewBar.innerHTML = '';
     }
+}
+
+// ============================
+// 粘贴 & 拖拽支持
+// ============================
+
+/**
+ * 从 DataTransfer 中提取第一个媒体文件
+ */
+function extractMediaFromDataTransfer(dataTransfer) {
+    if (!dataTransfer || !dataTransfer.items) return null;
+    for (let i = 0; i < dataTransfer.items.length; i++) {
+        const item = dataTransfer.items[i];
+        if (item.kind === 'file' && (item.type.startsWith('image/') || item.type.startsWith('video/'))) {
+            return item.getAsFile();
+        }
+    }
+    // 兼容旧浏览器：检查 files
+    if (dataTransfer.files && dataTransfer.files.length) {
+        const f = dataTransfer.files[0];
+        if (f.type.startsWith('image/') || f.type.startsWith('video/')) return f;
+    }
+    return null;
+}
+
+/**
+ * 初始化粘贴和拖拽事件（在 DOMContentLoaded 中调用）
+ */
+function initPasteAndDrop() {
+    const chatInput = document.getElementById('chatInput');
+    const inputArea = document.querySelector('.chat-input-area');
+    const inputWrapper = document.querySelector('.input-wrapper');
+
+    if (!chatInput || !inputArea) return;
+
+    // ---- 粘贴事件（textarea 和整个输入区域都监听） ----
+    chatInput.addEventListener('paste', (e) => {
+        const file = extractMediaFromDataTransfer(e.clipboardData);
+        if (file) {
+            e.preventDefault(); // 阻止粘贴文本
+            processMediaFile(file);
+        }
+        // 非媒体粘贴照常走默认行为（粘贴文本）
+    });
+
+    // ---- 拖拽事件：整个输入区域 ----
+    const dropZone = inputWrapper || inputArea;
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // 检查是否包含文件
+        if (e.dataTransfer && e.dataTransfer.types.includes('Files')) {
+            e.dataTransfer.dropEffect = 'copy';
+            dropZone.classList.add('drag-over-active');
+        }
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // 只有真正离开才移除高亮（避免子元素触发）
+        if (!dropZone.contains(e.relatedTarget)) {
+            dropZone.classList.remove('drag-over-active');
+        }
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('drag-over-active');
+
+        const file = extractMediaFromDataTransfer(e.dataTransfer);
+        if (file) {
+            processMediaFile(file);
+        } else {
+            showToast('仅支持拖入图片或视频文件', 'info');
+        }
+    });
+
+    // 防止页面其他区域拖拽导致浏览器打开文件
+    document.addEventListener('dragover', (e) => { e.preventDefault(); });
+    document.addEventListener('drop', (e) => { e.preventDefault(); });
+
+    console.log('📋 粘贴/拖拽媒体支持已初始化');
 }
 
 // 键盘快捷键
@@ -4948,8 +5142,9 @@ window.addEventListener('DOMContentLoaded', () => {
     switchPage('chat');
     initScrollControl();   // 初始化滚动控制：用户上滑时停止自动跟随
     initMobile();          // 初始化移动端适配
+    initPasteAndDrop();    // 初始化粘贴/拖拽图片视频
     checkVenusConnectivity(); // 检测 Venus 内网连通性，引导外部用户配置
-    console.log('🎓 深圳中考专家系统 v1.6 已启动');
+    console.log('🎓 深圳中考专家系统 v1.7 已启动');
     console.log('📐 JSXGraph 几何引擎就绪');
     console.log('🤖 Venus LLM 对话引擎就绪');
     console.log(`📚 知识库: ${KB_DATA.length} 个文件（全部含描述）`);
@@ -4958,7 +5153,7 @@ window.addEventListener('DOMContentLoaded', () => {
     console.log('🌐 8引擎搜索就绪（Tavily/Brave/Exa/Gemini/B站/知乎/公众号/小红书）');
     console.log('🧠 深度思考模式就绪');
     console.log('⭐ 精华收藏系统就绪');
-    console.log('🖼️ 多模态图片对话就绪');
+    console.log('🖼️ 多模态图片/视频对话就绪（支持粘贴/拖拽）');
     console.log('📝 学科快捷提问模板就绪');
     console.log('📱 移动端适配就绪');
     console.log('🔑 自定义 API 模式就绪');
