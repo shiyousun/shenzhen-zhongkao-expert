@@ -64,11 +64,91 @@ body {
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
+    transition: width 0.25s ease;
+    overflow: hidden;
 }
 
 .sidebar-header {
     padding: 18px 16px 16px;
     border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* 折叠按钮 */
+.sidebar-collapse-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.sidebar-collapse-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--accent);
+}
+
+/* 折叠态侧边栏 */
+.sidebar.collapsed {
+    width: 56px;
+}
+
+.sidebar.collapsed .logo-text {
+    display: none;
+}
+
+.sidebar.collapsed .nav-label {
+    display: none;
+}
+
+.sidebar.collapsed .nav-item {
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.sidebar.collapsed .nav-icon {
+    width: auto;
+}
+
+.sidebar.collapsed .sidebar-header {
+    justify-content: center;
+    padding: 14px 8px 12px;
+}
+
+.sidebar.collapsed .sidebar-header .logo {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-collapse-btn span {
+    transform: rotate(180deg);
+    display: inline-block;
+}
+
+.sidebar.collapsed .sidebar-footer {
+    padding: 8px 4px;
+}
+
+.sidebar.collapsed .api-status-bar {
+    display: none;
+}
+
+.sidebar.collapsed .version-info {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-nav {
+    padding: 10px 4px;
 }
 
 .logo {

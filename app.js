@@ -692,7 +692,8 @@ const SYSTEM_PROMPT = `你是"深圳中考全科AI名师"，一位拥有20年教
 ### 2. 几何图形
 - 当涉及几何问题时，主动提供图形描述
 - 标注关键点、线段、角度
-- 说明辅助线的添加思路
+- **辅助线图必须全面**：包含解题全过程用到的所有辅助线、关键长度标注、相似三角形高亮、角度对应标记
+- 说明每一条辅助线的添加思路和作用
 
 ### 3. 知识体系
 - 严格基于以上深圳中考考纲和教材大纲回答
@@ -905,12 +906,31 @@ E.x = A.x + (D.x-A.x)·0.5 - (D.y-A.y)·(-0.866) = 200 + (-40)·0.5 - (242)·(-0
 7. **验证比例**：画完后心算检查——等边三角形高与底边之比应≈0.866:1
 8. **出题画图标准**：图形要像中考真题的配图一样规范、美观、精确
 9. **圆上的点必须精确**：每个声称在圆上的点，坐标必须用 (cx+r·cosθ, cy-r·sinθ) 精确计算，验证距圆心的距离=半径！A、B 这些点不能飘在圆外或圆内，这是低级错误！
-10. **画图题必须出两张图**：
+10. **画图题必须出两张图**（这是铁律中的铁律！违反此条等于解题失败！）：
     - 第一张：**纯原题图**，只画题目已知条件中的几何元素（线段、点、圆等），**不画任何辅助线**
-    - 第二张：**辅助线图**，在解题过程中再出一张带辅助线（虚线）的完整图
+    - 第二张：**辅助线图**，在解题过程中需要作辅助线时，**必须再画一张**包含辅助线（虚线 stroke-dasharray="6,4"）的完整图，这张图是在原题图基础上加上辅助线
     - 两张图都用 [geometry]...[/geometry] 包裹
     - 原题图放在题目描述之后、解题过程之前
     - 辅助线图放在"添加辅助线"的解题步骤附近
+    - ⚠️ **即使用户给了题目图片，你也必须自己画出这两张SVG图**！用户上传的图片是参考，你的任务是用SVG精确重绘
+    - ⚠️ **辅助线图不可省略**！只要解题过程中用到了辅助线（连线、延长线、作高、作垂线、作平行线等），就必须画出辅助线图
+
+11. **辅助线图必须全面覆盖整个解题过程**（这是比第10条更重要的铁律！）：
+    - 辅助线图**不是只画一两条辅助线**，而是把解题**全过程**中涉及的**所有辅助构造**一次性画完！
+    - 画辅助线图之前，先在脑中完成整个解题过程，列出所有需要的辅助线清单
+    - 辅助线清单必须包括但不限于：
+      ✦ 连接的线段（如连接OC、连接BE等）
+      ✦ 作的垂线（如作高CD⊥AB等）
+      ✦ 延长线（如延长BA到点G等）
+      ✦ 平行线（如过E作EF∥AB等）
+      ✦ 标注的角度弧线（如∠1、∠2相等的标记）
+      ✦ 相似三角形的高亮标注（用不同颜色的半透明填充区分）
+      ✦ 关键长度标注（如CD=4、BD、AD等已知和推算出的长度）
+      ✦ 关键比例标注（如CF:FD=1:2等）
+    - **必须标注关键长度值**：已知的长度直接标注数值，推算出的长度也标注（如用红色 #ff6b6b 标注 BD=2, AD=8 等）
+    - **必须标注相似三角形**：用半透明填充（如 rgba(91,124,250,0.12) 和 rgba(226,181,255,0.12)）高亮标出相似的两组三角形
+    - **角度对应关系**：相等的角用相同颜色的弧线标记（如∠1=∠2 用同色弧线）
+    - 一句话原则：**看这一张辅助线图，就能完全理解整个解题思路**，不需要再去读文字
 
 ## 七-C、出题大师模式（像深圳中考真题一样出题！）
 
@@ -1455,6 +1475,34 @@ function assignModelForSession(sessionId) {
 
     // 全部占用（不太可能，4个模型同时用），还是用第一个
     return MODEL_POOL[0].id;
+}
+
+// ============================
+// 侧边栏折叠/展开
+// ============================
+let sidebarCollapsed = false;
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebarCollapsed = !sidebarCollapsed;
+    sidebar.classList.toggle('collapsed', sidebarCollapsed);
+    
+    // 保存状态到 localStorage
+    try {
+        localStorage.setItem('sidebarCollapsed', sidebarCollapsed ? '1' : '0');
+    } catch (e) {}
+}
+
+// 初始化时恢复 sidebar 折叠状态
+function restoreSidebarState() {
+    try {
+        const saved = localStorage.getItem('sidebarCollapsed');
+        if (saved === '1') {
+            sidebarCollapsed = true;
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) sidebar.classList.add('collapsed');
+        }
+    } catch (e) {}
 }
 
 // ============================
@@ -2095,8 +2143,9 @@ function renderFigurePanel() {
 
     let html = '';
 
-    // 1) 原题图 + 图片：直接展示
-    mainFigures.forEach(fig => {
+    // 1) 原题图 + 图片：最新的排前面（倒序）
+    const mainReversed = [...mainFigures].reverse();
+    mainReversed.forEach(fig => {
         const badgeText = fig.type === 'original' ? '原题图' : fig.type === 'image' ? '图片' : '';
         const badgeClass = fig.type === 'image' ? 'style="background:rgba(251,191,36,0.12);color:#fbbf24;"' : '';
         html += `
@@ -2112,31 +2161,61 @@ function renderFigurePanel() {
         `;
     });
 
-    // 2) 辅助线图：折叠区域，默认隐藏
+    // 2) 辅助线图：按消息分组，最新消息的辅助线优先显示
     if (auxFigures.length > 0) {
+        // 按 msgIndex 分组，然后倒序（最新消息的辅助线排最前）
+        const auxByMsg = {};
+        auxFigures.forEach(fig => {
+            if (!auxByMsg[fig.msgIndex]) auxByMsg[fig.msgIndex] = [];
+            auxByMsg[fig.msgIndex].push(fig);
+        });
+        const auxGroups = Object.keys(auxByMsg).sort((a, b) => b - a); // 最新消息排前
+        const latestAuxGroup = auxGroups[0]; // 最新一组的 msgIndex
+        const latestAuxFigures = auxByMsg[latestAuxGroup];
+
         html += `
             <div class="aux-toggle-section">
                 <button class="aux-toggle-btn" id="auxToggleBtn" onclick="toggleAuxFigures(event)">
                     <span class="aux-toggle-icon">📐</span>
                     <span class="aux-toggle-text">辅助线</span>
-                    <span class="aux-toggle-hint">点击查看解题辅助线</span>
+                    <span class="aux-toggle-hint">点击查看解题辅助线（最新）</span>
                     <span class="aux-toggle-arrow" id="auxToggleArrow">▼</span>
                 </button>
                 <div class="aux-figures-container" id="auxFiguresContainer" style="display:none;">
         `;
-        auxFigures.forEach(fig => {
+        // 最新一组辅助线图高亮显示
+        latestAuxFigures.forEach(fig => {
             html += `
-                <div class="figure-card figure-card-aux" id="fcard_${fig.id}"
+                <div class="figure-card figure-card-aux figure-card-latest" id="fcard_${fig.id}"
                      onclick="scrollToFigureSource('${fig.id}', ${fig.msgIndex})"
                      title="点击定位到对话中的原位置">
                     <div class="figure-card-label">
                         <span class="figure-card-label-text">${fig.label}</span>
-                        <span class="figure-card-label-badge" style="background:rgba(226,181,255,0.12);color:#e2b5ff;">辅助线</span>
+                        <span class="figure-card-label-badge" style="background:rgba(91,124,250,0.18);color:#5b7cfa;">最新</span>
                     </div>
                     <div class="figure-card-body">${fig.html}</div>
                 </div>
             `;
         });
+        // 历史辅助线图（如果有多组）
+        if (auxGroups.length > 1) {
+            html += `<div class="aux-history-divider" style="padding:4px 12px;color:rgba(255,255,255,0.35);font-size:11px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);margin-top:6px;">── 历史辅助线 ──</div>`;
+            auxGroups.slice(1).forEach(msgIdx => {
+                auxByMsg[msgIdx].forEach(fig => {
+                    html += `
+                        <div class="figure-card figure-card-aux" id="fcard_${fig.id}"
+                             onclick="scrollToFigureSource('${fig.id}', ${fig.msgIndex})"
+                             title="点击定位到对话中的原位置" style="opacity:0.6;">
+                            <div class="figure-card-label">
+                                <span class="figure-card-label-text">${fig.label}</span>
+                                <span class="figure-card-label-badge" style="background:rgba(226,181,255,0.12);color:#e2b5ff;">辅助线</span>
+                            </div>
+                            <div class="figure-card-body">${fig.html}</div>
+                        </div>
+                    `;
+                });
+            });
+        }
         html += `
                 </div>
             </div>
@@ -3189,21 +3268,23 @@ async function sendChat() {
     input.value = '';
     autoResizeTextarea(input);
 
-    // 检查是否需要触发几何画板
-    const geoMatch = detectGeometryRequest(userMsg);
-    if (geoMatch) {
-        const geoMsg = appendMessage('assistant', '', true, false);
-        setTimeout(() => {
-            const replyContent = `已为你加载几何场景：**${getGeometryTitle(geoMatch)}**\n\n请在左侧几何画板中查看和交互。你可以拖拽点位来观察变化。`;
-            switchPage('geometry');
-            loadGeometry(geoMatch);
-            updateStreamMessage(geoMsg, replyContent);
-            // 保存到会话
-            session.messages.push({ role: 'assistant', content: replyContent, timestamp: Date.now() });
-            session.updatedAt = Date.now();
-            saveSessions();
-        }, 500);
-        return;
+    // 检查是否需要触发几何画板（仅在无图片附件时才可能跳转）
+    if (!imageToSend) {
+        const geoMatch = detectGeometryRequest(userMsg);
+        if (geoMatch) {
+            const geoMsg = appendMessage('assistant', '', true, false);
+            setTimeout(() => {
+                const replyContent = `已为你加载几何场景：**${getGeometryTitle(geoMatch)}**\n\n请在左侧几何画板中查看和交互。你可以拖拽点位来观察变化。`;
+                switchPage('geometry');
+                loadGeometry(geoMatch);
+                updateStreamMessage(geoMsg, replyContent);
+                // 保存到会话
+                session.messages.push({ role: 'assistant', content: replyContent, timestamp: Date.now() });
+                session.updatedAt = Date.now();
+                saveSessions();
+            }, 500);
+            return;
+        }
     }
 
     // 为当前会话分配模型
@@ -3376,7 +3457,15 @@ async function sendChat() {
         });
 
         if (!response.ok) {
-            throw new Error(`API 错误: ${response.status} ${response.statusText}`);
+            // 尝试解析错误详情
+            let errDetail = '';
+            try {
+                const errData = await response.json();
+                errDetail = errData.error?.message || errData.message || JSON.stringify(errData).substring(0, 200);
+            } catch (e) {
+                errDetail = response.statusText;
+            }
+            throw new Error(`API 错误 (HTTP ${response.status}): ${errDetail}`);
         }
 
         const reader = response.body.getReader();
@@ -3498,9 +3587,74 @@ async function sendChat() {
                 saveSessions();
             }
         } else {
-            console.error('Chat error:', error);
-            if (activeSessionId === sendSessionId && rt.streamingMsgDiv) {
-                updateStreamMessage(rt.streamingMsgDiv, `⚠️ **请求出错**: ${error.message}\n\n请检查网络连接和 API 设置。`);
+            console.error('Chat error (stream):', error);
+
+            // ★ Fallback: 流式请求失败后，自动尝试非流式请求（参考 venus_test.html 的兜底逻辑）
+            let fallbackSuccess = false;
+            if (!rt.fullContent && rt.streamingMsgDiv) {
+                console.log('[Fallback] 流式请求失败，尝试非流式请求...');
+                if (activeSessionId === sendSessionId && rt.streamingMsgDiv) {
+                    updateStreamMessage(rt.streamingMsgDiv, '⏳ *流式请求失败，正在尝试非流式模式...*');
+                }
+                try {
+                    const fallbackResp = await fetch(CONFIG.apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${CONFIG.apiToken}`,
+                        },
+                        body: JSON.stringify({
+                            model: assignedModel,
+                            messages: messages,
+                            temperature: CONFIG.temperature,
+                            max_tokens: CONFIG.maxTokens,
+                            // 注意：不传 stream 参数，使用非流式
+                        }),
+                    });
+                    const fallbackData = await fallbackResp.json();
+                    if (fallbackData.choices?.[0]?.message?.content) {
+                        rt.fullContent = fallbackData.choices[0].message.content;
+                        if (activeSessionId === sendSessionId && rt.streamingMsgDiv) {
+                            updateStreamMessage(rt.streamingMsgDiv, rt.fullContent);
+                        }
+                        // 保存到会话
+                        const targetSession2 = getSessionById(sendSessionId);
+                        if (targetSession2) {
+                            targetSession2.messages.push({ role: 'assistant', content: rt.fullContent, timestamp: Date.now() });
+                            targetSession2.updatedAt = Date.now();
+                            saveSessions();
+                        }
+                        fallbackSuccess = true;
+                        console.log('[Fallback] 非流式请求成功！');
+                    } else {
+                        const errMsg2 = fallbackData.error?.message || '非流式请求也返回空';
+                        throw new Error(errMsg2);
+                    }
+                } catch (fallbackErr) {
+                    console.error('Chat error (fallback):', fallbackErr);
+                }
+            }
+
+            if (!fallbackSuccess) {
+                // 流式和非流式都失败了，给出详细错误提示
+                let errorDetail = error.message;
+                let hint = '请检查网络连接和 API 设置。';
+
+                if (error.message.includes('401')) {
+                    hint = '**API Token 无效或未配置**。请点击右上角 ⚙️ 设置，填入有效的 Venus API Token。';
+                } else if (error.message.includes('403')) {
+                    hint = '**API 访问被拒绝**，请确认 Token 权限或联系管理员。';
+                } else if (error.message.includes('429')) {
+                    hint = '**请求过于频繁**，请稍后重试。';
+                } else if (error.message.includes('500') || error.message.includes('502') || error.message.includes('503')) {
+                    hint = '**服务端错误**，Venus 服务可能暂时不可用，请稍后重试。';
+                } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    hint = '**网络不可达**，请确认是否在公司内网环境，或检查 VPN 连接。';
+                }
+
+                if (activeSessionId === sendSessionId && rt.streamingMsgDiv) {
+                    updateStreamMessage(rt.streamingMsgDiv, `⚠️ **请求出错**: ${errorDetail}\n\n${hint}`);
+                }
             }
         }
     } finally {
@@ -3846,6 +4000,14 @@ document.addEventListener('keydown', (e) => {
 // 几何图形检测
 // ============================
 function detectGeometryRequest(text) {
+    // 如果用户是在请求证明、解释、概念说明，不跳转到几何画板，而是让AI直接在对话中回答
+    const excludePatterns = /证明|推导|解释|什么是|概念|为什么|怎么理解|请问|说一下|说说|讲一讲|讲讲|举例|举个例|定义|原理|公式|怎么证|如何证|求证|论证|说明.*为什么|为何|帮我理解|通俗|怎么用/;
+    if (excludePatterns.test(text)) return null;
+
+    // 如果用户上传了图片（消息中含图片描述性词汇），不跳转，让AI在对话中解题
+    const hasImageHint = /这道题|这张图|图中|图片|看图|如图|请看|题目/;
+    if (hasImageHint.test(text)) return null;
+
     const patterns = {
         'drinking_horse': /将军饮马|饮马问题|对称.*最短/i,
         'fermat': /费马点|三角形.*最小.*距离和/i,
@@ -4977,6 +5139,18 @@ async function checkVenusConnectivity() {
         return;
     }
 
+    // 检查 Token 是否还是占位符
+    const tokenToTest = CONFIG.apiToken;
+    if (!tokenToTest || tokenToTest === 'YOUR_VENUS_API_TOKEN') {
+        console.warn('⚠️ Venus API Token 未配置（仍为占位符），请在设置中填入有效 Token');
+        updateApiStatusBadge('disconnected');
+        // 弹出设置引导
+        if (!CONFIG.customApiUrl) {
+            setTimeout(() => showApiGuideModal(), 1500);
+        }
+        return;
+    }
+
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 4000); // 4秒超时
@@ -4985,7 +5159,7 @@ async function checkVenusConnectivity() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${VENUS_DEFAULT.apiToken}`,
+                'Authorization': `Bearer ${tokenToTest}`,
             },
             body: JSON.stringify({
                 model: 'gemini-2.5-flash',
@@ -4996,12 +5170,17 @@ async function checkVenusConnectivity() {
         });
         clearTimeout(timeoutId);
 
-        if (resp.ok || resp.status === 400 || resp.status === 401 || resp.status === 429) {
-            // 能连通 Venus（包括认证错误等，至少说明网络通）
+        if (resp.ok || resp.status === 400 || resp.status === 429) {
+            // 能连通 Venus 且 Token 有效（或频率限制，说明也通了）
             updateApiStatusBadge('venus');
-            console.log('✅ Venus 内网连通，使用默认配置');
+            console.log('✅ Venus 内网连通，Token 有效');
+        } else if (resp.status === 401) {
+            // 网络通，但 Token 无效
+            updateApiStatusBadge('disconnected');
+            console.warn('⚠️ Venus 内网可达，但 API Token 无效（401）。请在设置中更新 Token。');
+            showToast('⚠️ Venus Token 无效，请在 ⚙️ 设置中更新', 'warning');
         } else {
-            throw new Error('非预期状态码');
+            throw new Error(`非预期状态码: ${resp.status}`);
         }
     } catch (err) {
         console.warn('⚠️ Venus 内网不可达，可能是外部网络:', err.message);
@@ -5136,6 +5315,7 @@ function toggleChatFeature(feature) {
 window.addEventListener('DOMContentLoaded', () => {
     initMarked();
     loadSettings();
+    restoreSidebarState(); // 恢复侧边栏折叠状态
     loadFavorites();       // 加载收藏数据
     loadSearchHistory();   // 加载搜索历史
     loadSessions(); // 加载多会话
